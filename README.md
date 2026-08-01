@@ -1,141 +1,59 @@
-# 📱 DevArt Flutter App
+# 🎨 DevArt UI/UX Mobile Design Showcase
 
-Welcome to **DevArt**, a premium, high-fidelity Flutter e-commerce application featuring a dual-interface system for both **Customers** (to browse, wish, and buy products) and **Admins** (to manage inventory, customers, and orders).
-
-This repository is designed to match and implement the Figma design layout, pages, and interactive navigation flows exactly as specified in the Figma prototype.
+Welcome to the design showcase repository for **DevArt**, a premium, high-fidelity mobile application UI/UX concept. This repository contains the interactive Figma prototype and design specifications for both the **Customer Shopping Experience** and the **Store Admin Panel**.
 
 ---
 
-## 🎨 Figma Design & Prototype Links
+## 🔗 Interactive Prototype & Design Links
 
-- **Figma Design File (Dev Mode)**: [Figma Design Link](https://www.figma.com/design/S5bQWaqh9je6CCEzaqppYL/DevArt-Flutter-App?node-id=0-1&m=dev&t=6NYSDUl090e1h4K4-1)
-- **Figma Prototype Play Link**: [Open Prototype in Figma](https://www.figma.com/proto/S5bQWaqh9je6CCEzaqppYL/DevArt-Flutter-App?node-id=0-1&scaling=scale-down&page-id=0%3A1&starting-point-node-id=0%3A1)
-
-> [!NOTE]
-> Please ensure you have access to the Figma workspace to view the layout measurements, fonts, and hex colors in Dev Mode.
+* **⚡ Live Interactive Prototype**: [Launch Figma Prototype](https://www.figma.com/proto/S5bQWaqh9je6CCEzaqppYL/DevArt-Flutter-App?node-id=2-273&p=f&t=6NYSDUl090e1h4K4-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=2%3A273&device-frame=0)
+* **🎨 Figma Design File (Dev Mode)**: [Open Figma Design Workspace](https://www.figma.com/design/S5bQWaqh9je6CCEzaqppYL/DevArt-Flutter-App?node-id=0-1&m=dev&t=6NYSDUl090e1h4K4-1)
+* **🖥️ Local Prototype Viewer**: Open [index.html](file:///C:/Users/agrav/.gemini/antigravity-ide/scratch/devart_UI/index.html) in your browser to view the interactive Figma prototype embedded directly on a webpage.
 
 ---
 
-## 🚀 Key Features & App Modules
+## 📸 Design Preview
 
-The application is split into two major user spaces:
+Here are the high-fidelity mockups of the screens included in the Figma workspace:
 
-### 🛍️ 1. Customer Application
-A tactile, minimalist mobile shopping experience for users:
-* **Authentication**: Seamless Login, Sign Up, and Secure Password Management.
-* **Profile & Settings**: Profile Dashboard, Edit Profile, Personal Details, and a dynamic Address Book (Add/Edit Addresses).
-* **Browsing & Discovery**:
-  * Home Screen featuring category filters and product grid layouts.
-  * Rich Product Details page with specs and image sliders.
-  * Interactive Wishlist to save favorite items.
-* **Checkout Flow**:
-  * Shopping Cart management (add/remove items, quantity adjust).
-  * Secure multi-step Checkout (Address selection ➔ Payment gateway simulation ➔ Order success confirmation screen).
-* **Orders & Offers**: Order History list and active Promo/Coupon codes integration.
+### 🌟 Project Design Overview
+![DevArt Design Overview](assets/design_overview.png)
 
-### 💼 2. Admin Panel
-A clean administrative tool built for shop owners to manage backend operations:
-* **Admin Auth**: Dedicated Admin Login and profile state.
-* **Product Management**: Dashboard statistics, live Inventory list, Add New Product interface, and Edit Product panel.
-* **Order & Customer Operations**: Customer accounts list, Orders queue management, and discount/offers configuration.
+### 📱 Customer Profile & Account Screens
+![Customer Screens Detail](assets/home_screen_detail.png)
 
 ---
 
-## 🗺️ Navigation & Screen Flow
+## 🚀 Design Overview & App Modules
 
-The application utilizes a bottom navigation bar for the customer experience and a clean sidebar/dashboard for the admin panel.
+The design is split into two major functional sections:
 
-```mermaid
-graph TD
-    %% Customer Flow
-    subgraph Customer App
-        Start[Splash Screen] --> Login[Login Screen]
-        Login --> SignUp[Sign Up]
-        Login --> Home[Home / Product Catalog]
-        
-        %% Bottom Bar Tabs
-        Home --> Categories[Categories Tab]
-        Home --> Orders[Orders Tab]
-        Home --> Account[Account Tab]
-        
-        %% Product Details and Buy
-        Home --> Details[Product Details]
-        Details --> Wishlist[Wishlist]
-        Details --> Cart[Shopping Cart]
-        
-        %% Checkout Flow
-        Cart --> Address[Delivery Address Select]
-        Address --> Payment[Payment Screen]
-        Payment --> Success[Order Confirmed Page]
-        
-        %% Profile submenus
-        Account --> EditProfile[Edit Profile]
-        Account --> AddressBook[Address Book]
-        Account --> HelpSupport[Help & Support]
-        Account --> Coupons[Coupons Panel]
-    end
+### 🛍️ 1. Customer Mobile Application
+A sleek, tactile mobile shopping experience:
+* **Authentication**: Login, Sign Up, and Change Password screens with a clean, centered interface.
+* **Product Catalog**: Home grid showing featured items, pricing details, and categories.
+* **Product Details**: Large image display, rating, wishlist toggles, and "Add to Cart" action overlays.
+* **Shopping Cart & Checkout**: Clean cart items list with quantity adjusters, shipping address book, payment options, and a success confirmation page.
+* **Account Tab**: Order history, edit profile page, active coupon codes list, and support resources.
 
-    %% Admin Flow
-    subgraph Admin Panel
-        AdminLogin[Admin Login] --> Dashboard[Admin Dashboard]
-        Dashboard --> Inventory[Inventory List]
-        Inventory --> AddProduct[Add Product]
-        Inventory --> EditProduct[Edit Product]
-        Dashboard --> ManageOrders[Orders Management]
-        Dashboard --> Customers[Customer List]
-        Dashboard --> Settings[Admin Settings]
-    end
-```
+### 💼 2. Admin Panel Mobile Interface
+A professional, minimal dashboard for store managers:
+* **Dashboard Overview**: Metrics tracking, sales data, and quick actions.
+* **Inventory Control**: Comprehensive product lists, detailed edit panels, and an "Add New Product" form.
+* **Order Tracking**: Order status queues and customer profiles.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## 🎨 Design System & Styling Details
 
-The project follows a **Feature-First Clean Architecture** approach to ensure the codebase remains maintainable, scalable, and easy to test:
+The app uses **Tactile Minimalism** and **Soft Organicism** to evoke warmth and premium craft.
 
-* **Framework**: Flutter (Dart)
-* **State Management**: Choose between `Provider` (for light state) or `Flutter BLoC` (for structured state)
-* **Styling & Theme**: Curated dark and light themes mapping Figma's exact token system:
-  * **Earthy Brown** (`#8b5e3c`) as Primary
-  * **Soft Blue** (`#a9c7eb`) as Secondary
-  * **Ethereal White/Gray** (`#f8f9fa`) as Neutral/Background
-* **Routing**: Declarative navigation using `go_router` or standard Named Routes for clear mapping to Figma's interactive prototype paths.
-
----
-
-## 🏁 Getting Started & Setup
-
-### Prerequisites
-* Flutter SDK (v3.0.0 or higher)
-* Android Studio / VS Code with Flutter extensions
-* Git configured on your system
-
-### Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Prem-Agravat/devart_UI.git
-   cd devart_UI
-   ```
-
-2. **Get dependencies**:
-   ```bash
-   flutter pub get
-   ```
-
-3. **Run the application**:
-   - **For Development/Debug Mode**:
-     ```bash
-     flutter run
-     ```
-   - **To build a release APK**:
-     ```bash
-     flutter build apk --release
-     ```
-
----
-
-## ✍️ Authors & License
-
-- Designed & Configured by **Prem Agravat** ([agravatprem00@gmail.com](mailto:agravatprem00@gmail.com))
-- Free to use under the MIT License.
+* **Palette**: 
+  - Primary Earthy Brown: `#8B5E3C` (buttons, brand-heavy highlights)
+  - Secondary Soft Blue: `#A9C7EB` (chips, soft backgrounds)
+  - Scaffold Background: Off-white (`#F8F9FA`)
+* **Typography**:
+  - Geometric Headlines: `DM Sans`
+  - High-readability Body/UI Text: `Work Sans`
+* **Spacing**: 8px baseline rhythm with 20px screen margins.
+* **Shapes**: Safe, soft 12px–20px corner radius on cards, panels, and buttons.
