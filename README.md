@@ -12,35 +12,31 @@ Welcome to the design showcase repository for **DevArt**, a premium, high-fideli
 
 ---
 
-## 📸 Design Preview
+## 🗺️ Design Architecture & Flow Layers
 
-Here are the high-fidelity mockups of the screens included in the Figma workspace:
+Here is the breakdown of the application design, structured across four primary layers representing the mobile interface and the interactive user flows:
 
-### 🌟 Project Design Overview
-![DevArt Design Overview](assets/design_overview.png)
-
-### 📱 Customer Profile & Account Screens
-![Customer Screens Detail](assets/home_screen_detail.png)
+### 🛍️ Layer 1: Customer Section
+This layer showcases the end-user shopping application. It features clean authentication screens, product grids with categories, detailed product view screens, a shopping cart manager, checkout stages, and account tabs (wishlist, orders list, support, and active coupons).
+![Customer Section](assets/customer_section.png)
 
 ---
 
-## 🚀 Design Overview & App Modules
+### 💼 Layer 2: Admin Section
+This layer contains the administrative control screens for shop owners. It features the admin dashboard, real-time product inventory control lists, product editing tools, and an interface for adding new items.
+![Admin Section](assets/admin_section.png)
 
-The design is split into two major functional sections:
+---
 
-### 🛍️ 1. Customer Mobile Application
-A sleek, tactile mobile shopping experience:
-* **Authentication**: Login, Sign Up, and Change Password screens with a clean, centered interface.
-* **Product Catalog**: Home grid showing featured items, pricing details, and categories.
-* **Product Details**: Large image display, rating, wishlist toggles, and "Add to Cart" action overlays.
-* **Shopping Cart & Checkout**: Clean cart items list with quantity adjusters, shipping address book, payment options, and a success confirmation page.
-* **Account Tab**: Order history, edit profile page, active coupon codes list, and support resources.
+### 🗺️ Layer 3: Customer Navigation
+This layer diagrams the interactive flow and screen transition routes designed for the customer's shopping journey. It maps how a user moves from browsing the homepage to selecting items, adding them to the cart, and completing a mock checkout.
+![Customer Navigation](assets/customer_navigation.png)
 
-### 💼 2. Admin Panel Mobile Interface
-A professional, minimal dashboard for store managers:
-* **Dashboard Overview**: Metrics tracking, sales data, and quick actions.
-* **Inventory Control**: Comprehensive product lists, detailed edit panels, and an "Add New Product" form.
-* **Order Tracking**: Order status queues and customer profiles.
+---
+
+### ⚙️ Layer 4: Admin Navigation
+This layer diagrams the administrative flow routes. It details the connection pathways between the owner dashboard, editing products, modifying inventory stocks, and managing store settings.
+![Admin Navigation](assets/admin_navigation.png)
 
 ---
 
