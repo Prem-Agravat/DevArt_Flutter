@@ -10,31 +10,47 @@ Welcome to the design showcase repository for **DevArt**, a premium, high-fideli
 
 ---
 
+## 📁 Repository Layout
+
+To maintain a clean repository structure, all UI mockups, diagrams, and assets are housed within the dedicated `figma` folder.
+
+```plaintext
+├── figma/
+│   └── assets/            # Figma exported screens & user journey diagrams
+└── README.md              # Project documentation and design spec guide
+```
+
+---
+
 ## 🗺️ Design Architecture & Flow Layers
 
 Here is the breakdown of the application design, structured across four primary layers representing the mobile interface and the interactive user flows:
 
 ### 🛍️ Layer 1: Customer Section
 This layer showcases the end-user shopping application. It features clean authentication screens, product grids with categories, detailed product view screens, a shopping cart manager, checkout stages, and account tabs (wishlist, orders list, support, and active coupons).
-![Customer Section](assets/customer_section.png)
+
+![Customer Section](figma/assets/customer_section.png)
 
 ---
 
 ### 💼 Layer 2: Admin Section
 This layer contains the administrative control screens for shop owners. It features the admin dashboard, real-time product inventory control lists, product editing tools, and an interface for adding new items.
-![Admin Section](assets/admin_section.png)
+
+![Admin Section](figma/assets/admin_section.png)
 
 ---
 
 ### 🗺️ Layer 3: Customer Navigation
 This layer diagrams the interactive flow and screen transition routes designed for the customer's shopping journey. It maps how a user moves from browsing the homepage to selecting items, adding them to the cart, and completing a mock checkout.
-![Customer Navigation](assets/customer_navigation.png)
+
+![Customer Navigation](figma/assets/customer_navigation.png)
 
 ---
 
 ### ⚙️ Layer 4: Admin Navigation
 This layer diagrams the administrative flow routes. It details the connection pathways between the owner dashboard, editing products, modifying inventory stocks, and managing store settings.
-![Admin Navigation](assets/admin_navigation.png)
+
+![Admin Navigation](figma/assets/admin_navigation.png)
 
 ---
 
