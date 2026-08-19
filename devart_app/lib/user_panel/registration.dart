@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:devart/user_panel/registration.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class RegistrationScreen extends StatelessWidget {
+  const RegistrationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +38,7 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const Text(
-                    "Welcome Back!",
+                    "Create Account",
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
 
@@ -123,17 +122,11 @@ class LoginScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.black, fontSize: 18),
                       children: [
                         TextSpan(text: "Don't have an account? "),
-                        TextButton(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegistrationScreen()),
-                          ),
-                          child: const Text(
-                            "Sign Up",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
+                        TextSpan(
+                          text: "Sign Up",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ],
