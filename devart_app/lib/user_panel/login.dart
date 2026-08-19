@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:devart/user_panel/registration.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -115,21 +116,24 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 35),
+                  const SizedBox(height: 10),
 
-                  RichText(
-                    text: const TextSpan(
-                      style: TextStyle(color: Colors.black, fontSize: 18),
-                      children: [
-                        TextSpan(text: "Don't have an account? "),
-                        TextSpan(
-                          text: "Sign Up",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RegistrationScreen(),
                         ),
-                      ],
+                      );
+                    },
+                    child: const Text(
+                      "Don't have an account? Sign Up",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ],
