@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:devart/user_panel/login.dart';
+import 'package:devart/user_panel/login.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -34,10 +34,10 @@ class SplashScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Navigate to the login screen when the button is pressed
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => const LoginScreen()),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
               },
               child: Text(
                 'Get Started',
