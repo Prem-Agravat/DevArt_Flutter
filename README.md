@@ -1,6 +1,19 @@
 # 🎨 DevArt UI/UX Mobile Design Showcase
 
-Welcome to the design showcase repository for **DevArt**, a premium, high-fidelity mobile application UI/UX concept. This repository contains the interactive Figma prototype and design specifications for both the **Customer Shopping Experience** and the **Store Admin Panel**.
+Welcome to the design showcase and code repository for **DevArt**, a premium, high-fidelity mobile application UI/UX concept and Flutter implementation. This repository contains the interactive Figma prototype and design specifications for both the **Customer Shopping Experience** and the **Store Admin Panel**, along with the full codebase of the Flutter application.
+
+---
+
+## 📱 Flutter Implementation (Market Ready)
+
+We are building a full-featured, high-fidelity Flutter application based on this design. It is developed to be a production-ready mobile application, fully optimized and ready to run in the market.
+
+To run the application, navigate to the `devart_app` directory:
+```bash
+cd devart_app
+flutter pub get
+flutter run
+```
 
 ---
 
@@ -12,9 +25,10 @@ Welcome to the design showcase repository for **DevArt**, a premium, high-fideli
 
 ## 📁 Repository Layout
 
-To maintain a clean repository structure, all UI mockups, diagrams, and assets are housed within the dedicated `figma` folder.
+To maintain a clean repository structure, the repository is organized as follows:
 
 ```plaintext
+├── devart_app/            # Market-ready Flutter application code
 ├── figma/
 │   └── assets/            # Figma exported screens & user journey diagrams
 └── README.md              # Project documentation and design spec guide

@@ -1,16 +1,30 @@
-# devart
+# 🎨 DevArt Flutter App
 
-A new Flutter project.
+Welcome to the production-ready mobile application code for **DevArt**. 
 
-## Getting Started
+We are building a full-featured, high-fidelity Flutter application based on the DevArt UI/UX design showcase, developed to be fully functional, optimized, and ready to launch in the market.
 
-This project is a starting point for a Flutter application.
+## 🚀 Project Goal
+The goal of this project is to implement a complete, market-ready cross-platform mobile application covering:
+- **Customer Shopping Experience**: Authentication, home grid, product details, interactive cart, secure checkout, wishlist, and profile management.
+- **Store Admin Panel**: Inventory management, order tracking, and sales analytics dashboards.
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠️ Getting Started
+Ensure you have Flutter installed and configured on your machine.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. Navigate to the project directory:
+   ```bash
+   cd devart_app
+   ```
+2. Install dependencies:
+   ```bash
+   flutter pub get
+   ```
+3. Run the application:
+   ```bash
+   flutter run
+   ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📁 Project Structure
+- `lib/`: Main codebase containing the Flutter screens, widgets, controllers, and services.
+- `assets/`: App icons, custom fonts, and images.
