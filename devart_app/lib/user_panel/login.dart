@@ -92,11 +92,7 @@ class LoginScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 10),
-
-                  const Text("Admin Panel", style: TextStyle(fontSize: 18)),
-
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
                   SizedBox(
                     width: 220,
