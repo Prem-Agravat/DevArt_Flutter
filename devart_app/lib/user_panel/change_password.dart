@@ -157,7 +157,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart-logo.png",
+              "lib/assets/images/devart_bgimage.png",
               fit: BoxFit.cover,
             ),
           ),

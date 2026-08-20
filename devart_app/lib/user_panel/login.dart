@@ -73,12 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart-logo.png",
+              "lib/assets/images/devart_bgimage.png",
               fit: BoxFit.cover,
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.55)),
+            child: Container(color: Colors.white.withOpacity(0.20)),
           ),
           Positioned(
             left: 0,
