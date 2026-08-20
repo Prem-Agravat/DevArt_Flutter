@@ -7,20 +7,28 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'lib/assets/images/devart-logo.png',
-              width: 200,
-              height: 200,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'lib/assets/images/devart_bgimage.png',
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 20),
-            Row(
+          ),
+          Positioned.fill(
+            child: Container(color: Colors.white.withOpacity(0.36)),
+          ),
+          Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
+              children: [
+                Image.asset(
+                  'lib/assets/images/devart-logo.png',
+                  width: 200,
+                  height: 200,
+                ),
+                const SizedBox(height: 20),
+                const Text(
                   'Welcome to DevArt',
                   style: TextStyle(
                     fontSize: 24,
@@ -28,23 +36,25 @@ class SplashScreen extends StatelessWidget {
                     color: Colors.black,
                   ),
                 ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Get Started',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-              child: Text(
-                'Get Started',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

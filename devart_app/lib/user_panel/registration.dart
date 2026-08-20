@@ -311,15 +311,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               Expanded(
                 child: RichText(
                   text: const TextSpan(
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: TextStyle(color: Colors.black, fontSize: 16),
                     children: [
                       TextSpan(text: "I agree to all the "),
                       TextSpan(
                         text: "Terms & Conditions",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

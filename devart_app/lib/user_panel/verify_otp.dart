@@ -57,7 +57,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.55)),
+            child: Container(color: Colors.white.withOpacity(0.20)),
           ),
           Positioned(
             left: 0,
