@@ -1,3 +1,4 @@
+import 'package:devart/user_panel/forgot_pass.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/registration.dart';
 import 'package:devart/user_panel/dashboard.dart';
@@ -192,7 +193,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ForgotPasswordScreen(),
+                    ),
+                  );
+                },
                 child: const Text(
                   "Forgot Password?",
                   style: TextStyle(fontSize: 16, color: Colors.black),
@@ -200,20 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 15),
-          TextButton(
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            onPressed: () {},
-            child: const Text(
-              "Admin Panel",
-              style: TextStyle(fontSize: 17, color: Colors.black),
-            ),
-          ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 30),
+
           SizedBox(
             width: 220,
             height: 55,

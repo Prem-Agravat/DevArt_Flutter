@@ -85,7 +85,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart-bgimage.png",
+              "lib/assets/images/devart-logo.png",
               fit: BoxFit.cover,
             ),
           ),
