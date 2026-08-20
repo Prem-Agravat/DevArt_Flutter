@@ -81,11 +81,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart_bgimage.png",
+              "lib/assets/images/devart_bgimage_auth.png",
               fit: BoxFit.cover,
             ),
           ),

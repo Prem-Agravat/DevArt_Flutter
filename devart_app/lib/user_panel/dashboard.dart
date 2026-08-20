@@ -30,18 +30,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFF7F5F2),
       body: SafeArea(
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                "lib/assets/images/devart-bgimage.png",
-                fit: BoxFit.cover,
+              child: Opacity(
+                opacity: 0.30,
+                child: Image.asset(
+                  "lib/assets/images/devart_bgimg_dashboard.png",
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
+
             Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.72)),
+              child: Container(color: Colors.white.withOpacity(0.35)),
             ),
             Column(
               children: [

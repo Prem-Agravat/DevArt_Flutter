@@ -69,11 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart_bgimage.png",
+              "lib/assets/images/devart_bgimage_auth.png",
               fit: BoxFit.cover,
             ),
           ),
@@ -185,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   });
                 },
               ),
-              const Text("Remember me", style: TextStyle(fontSize: 16)),
+              const Text("Remember me", style: TextStyle(fontSize: 14)),
               const Spacer(),
               TextButton(
                 style: TextButton.styleFrom(
@@ -204,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: const Text(
                   "Forgot Password?",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     decoration: TextDecoration.underline,
                   ),
                 ),

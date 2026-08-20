@@ -11,12 +11,12 @@ class SplashScreen extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'lib/assets/images/devart_bgimage.png',
+              'lib/assets/images/devart_bgimage_auth.png',
               fit: BoxFit.cover,
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.36)),
+            child: Container(color: Colors.white.withOpacity(0.20)),
           ),
           Center(
             child: Column(
