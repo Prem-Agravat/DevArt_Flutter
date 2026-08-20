@@ -33,7 +33,6 @@ class SplashScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the login screen when the button is pressed
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -41,7 +40,7 @@ class SplashScreen extends StatelessWidget {
               },
               child: Text(
                 'Get Started',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: TextStyle(fontSize: 18, color: Colors.black),
               ),
             ),
           ],
