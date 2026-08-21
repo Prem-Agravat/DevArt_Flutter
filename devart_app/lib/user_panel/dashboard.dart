@@ -83,6 +83,55 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildSectionHeader(String title, String action) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            fontFamily: "serif",
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            if (title == "Categories") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+              );
+            }
+
+            if (title == "Featured") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SelectedCategoryScreen(category: "All"),
+                ),
+              );
+            }
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            action,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontFamily: "serif",
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSearchBar() {
     return Container(
       height: 52,
@@ -124,48 +173,6 @@ class _HomeScreenState extends State<HomeScreen> {
           fit: BoxFit.cover,
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, String action) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            fontFamily: "serif",
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            if (title == "Categories") {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CategoriesScreen(),
-                ),
-              );
-            }
-          },
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(
-            action,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              fontFamily: "serif",
-            ),
-          ),
-        ),
-      ],
     );
   }
 

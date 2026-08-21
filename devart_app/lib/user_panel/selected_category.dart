@@ -14,6 +14,54 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
   int selectedBottomNav = 1;
 
   final Map<String, Map<String, dynamic>> categoryData = {
+    "All": {
+      "description":
+          "Explore our complete collection of premium\nhandcrafted home decor products.",
+      "products": [
+        {
+          "name": "IndigoGeometry",
+          "rating": "4.5",
+          "price": "₹899",
+          "oldPrice": "₹1090",
+          "image": "lib/assets/images/devart_product_1.webp",
+        },
+        {
+          "name": "Traditional Toran",
+          "rating": "4.5",
+          "price": "₹599",
+          "oldPrice": "₹799",
+          "image": "lib/assets/images/devart_product_1.webp",
+        },
+        {
+          "name": "Premium SofaCover",
+          "rating": "4.4",
+          "price": "₹1299",
+          "oldPrice": "₹1599",
+          "image": "lib/assets/images/devart_product_1.webp",
+        },
+        {
+          "name": "Floral Bedsheet",
+          "rating": "4.6",
+          "price": "₹799",
+          "oldPrice": "₹999",
+          "image": "lib/assets/images/devart_product_1.webp",
+        },
+        {
+          "name": "Designer Cushion",
+          "rating": "4.5",
+          "price": "₹999",
+          "oldPrice": "₹1199",
+          "image": "lib/assets/images/devart_product_1.webp",
+        },
+        {
+          "name": "Home Decor",
+          "rating": "4.3",
+          "price": "₹699",
+          "oldPrice": "₹899",
+          "image": "lib/assets/images/devart_product_1.webp",
+        },
+      ],
+    },
     "CushionCovers": {
       "description":
           "Premium handmade cushion with timeless\ncraftsmanship and comfort.",
