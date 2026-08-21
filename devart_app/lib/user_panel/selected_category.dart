@@ -142,41 +142,6 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      height: 88,
-      color: const Color(0xFFBFD5FA),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            left: 20,
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.menu, size: 38, color: Colors.black),
-            ),
-          ),
-          Image.asset(
-            "lib/assets/images/devart-logo.png",
-            width: 72,
-            height: 72,
-          ),
-          Positioned(
-            right: 20,
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.shopping_cart,
-                size: 38,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTitle() {
     return Container(
       height: 59,

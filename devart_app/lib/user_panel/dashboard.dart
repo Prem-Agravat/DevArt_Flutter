@@ -335,65 +335,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFC4D9FF),
-        border: Border(top: BorderSide(color: Color(0xFF8DAEEA), width: 1)),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CategoriesScreen()),
-            );
-          }
-        },
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 28),
-            activeIcon: Icon(Icons.home, size: 28),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined, size: 28),
-            activeIcon: Icon(Icons.assignment, size: 28),
-            label: "Categories",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined, size: 28),
-            activeIcon: Icon(Icons.inventory_2, size: 28),
-            label: "Orders",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined, size: 30),
-            activeIcon: Icon(Icons.account_circle, size: 30),
-            label: "Account",
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _Product {
