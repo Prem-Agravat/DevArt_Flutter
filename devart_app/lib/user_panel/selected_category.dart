@@ -1,3 +1,4 @@
+import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
 
 class SelectedCategoryScreen extends StatefulWidget {
@@ -110,6 +111,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
   };
 
   @override
+  @override
   Widget build(BuildContext context) {
     final data =
         categoryData[widget.category] ??
@@ -118,9 +120,9 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
     final products = data["products"] as List;
     final description = data["description"] as String;
 
-    return Scaffold(
-      backgroundColor: Colors.white,  
-      body: Stack(
+    return AppShell(
+      selectedIndex: 1,
+      child: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
@@ -130,13 +132,11 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
           ),
           Column(
             children: [
-              _buildHeader(),
               _buildTitle(),
               _buildDescription(description),
               Expanded(child: _buildProductGrid(products)),
             ],
           ),
-          _buildBottomNavigation(),
         ],
       ),
     );
@@ -360,54 +360,6 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Container(
-        height: 67,
-        decoration: BoxDecoration(
-          color: const Color(0xFFBFD5FA).withOpacity(0.95),
-          border: const Border(top: BorderSide(color: Color(0xFF8FAEDC))),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _bottomItem(Icons.home_outlined, "Home", 0),
-            _bottomItem(Icons.list_alt_outlined, "Categories", 1),
-            _bottomItem(Icons.inventory_2_outlined, "Orders", 2),
-            _bottomItem(Icons.account_circle_outlined, "Account", 3),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _bottomItem(IconData icon, String label, int index) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedBottomNav = index;
-        });
-      },
-      child: SizedBox(
-        width: 80,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 29, color: Colors.black),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
       ),
     );
   }

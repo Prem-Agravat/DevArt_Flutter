@@ -1,3 +1,4 @@
+import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/selected_category.dart';
 
@@ -50,9 +51,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
+    return AppShell(
+      selectedIndex: 1,
+      child: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
@@ -62,47 +63,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
           Column(
             children: [
-              _buildHeader(),
               _buildTitle(),
               _buildCategoryList(),
               Expanded(child: _buildProductGrid()),
             ],
-          ),
-          _buildBottomNavigation(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      height: 88,
-      decoration: const BoxDecoration(color: Color(0xFFBFD5FA)),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            left: 20,
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.menu, size: 38, color: Colors.black),
-            ),
-          ),
-          Image.asset(
-            "lib/assets/images/devart-logo.png",
-            width: 72,
-            height: 72,
-          ),
-          Positioned(
-            right: 20,
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.shopping_cart,
-                size: 38,
-                color: Colors.black,
-              ),
-            ),
           ),
         ],
       ),
@@ -288,85 +252,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Container(
-        height: 67,
-        decoration: BoxDecoration(
-          color: const Color(0xFFBFD5FA).withOpacity(0.95),
-          border: const Border(
-            top: BorderSide(color: Color(0xFF8FAEDC), width: 1),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 5,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _bottomItem(icon: Icons.home_outlined, label: "Home", index: 0),
-            _bottomItem(
-              icon: Icons.list_alt_outlined,
-              label: "Categories",
-              index: 1,
-            ),
-            _bottomItem(
-              icon: Icons.inventory_2_outlined,
-              label: "Orders",
-              index: 2,
-            ),
-            _bottomItem(
-              icon: Icons.account_circle_outlined,
-              label: "Account",
-              index: 3,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _bottomItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final isSelected = selectedBottomNav == index;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedBottomNav = index;
-        });
-      },
-      child: SizedBox(
-        width: 80,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 29, color: Colors.black),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

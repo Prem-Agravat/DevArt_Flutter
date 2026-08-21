@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/categories.dart';
+//import 'package:devart/user_panel/orders.dart';
+//import 'package:devart/user_panel/account.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
   final int selectedIndex;
 
   const AppShell({super.key, required this.child, required this.selectedIndex});
+
+  void _navigate(BuildContext context, int index) {
+    if (index == selectedIndex) return;
+
+    Widget page;
+
+    switch (index) {
+      case 0:
+        page = const HomeScreen();
+        break;
+      case 1:
+        page = const CategoriesScreen();
+        break;
+      // case 2:
+      //   page = const OrdersScreen();
+      //   break;
+      // case 3:
+      //   page = const AccountScreen();
+      //   break;
+      default:
+        return;
+    }
+
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,37 +64,32 @@ class AppShell extends StatelessWidget {
       body: child,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
-        onTap: (index) {
-          if (index == 1 && selectedIndex != 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const CategoriesScreen()),
-            );
-          }
-        },
+        onTap: (index) => _navigate(context, index),
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color(0xFFC4D9FF),
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.black,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined, size: 28),
+            activeIcon: Icon(Icons.home, size: 28),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined),
-            activeIcon: Icon(Icons.assignment),
+            icon: Icon(Icons.assignment_outlined, size: 28),
+            activeIcon: Icon(Icons.assignment, size: 28),
             label: "Categories",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined),
-            activeIcon: Icon(Icons.inventory_2),
+            icon: Icon(Icons.inventory_2_outlined, size: 28),
+            activeIcon: Icon(Icons.inventory_2, size: 28),
             label: "Orders",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            activeIcon: Icon(Icons.account_circle),
+            icon: Icon(Icons.account_circle_outlined, size: 30),
+            activeIcon: Icon(Icons.account_circle, size: 30),
             label: "Account",
           ),
         ],
