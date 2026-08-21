@@ -10,6 +10,7 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppShell(
       selectedIndex: 2,
+      selectedDrawerItem: "Orders",
       child: Stack(
         children: [
           Positioned.fill(

@@ -1,5 +1,5 @@
+import 'package:devart/user_panel/registration.dart';
 import 'package:flutter/material.dart';
-import 'package:devart/user_panel/login.dart';
 import 'package:devart/user_panel/verify_otp.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -247,7 +247,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const LoginScreen(),
+                                  builder: (context) =>
+                                      const RegistrationScreen(),
                                 ),
                               );
                             },

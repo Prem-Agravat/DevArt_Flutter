@@ -1,4 +1,5 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/user_panel/detail_item.dart';
 import 'package:flutter/material.dart';
 
 class SelectedCategoryScreen extends StatefulWidget {
@@ -11,8 +12,6 @@ class SelectedCategoryScreen extends StatefulWidget {
 }
 
 class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
-  int selectedBottomNav = 1;
-
   final Map<String, Map<String, dynamic>> categoryData = {
     "All": {
       "description":
@@ -105,7 +104,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
           "rating": "4.5",
           "price": "₹599",
           "oldPrice": "₹799",
-          "image": "lib/assets/images/devart_product_1.webp",
+          "images": "lib/assets/images/devart_product_1.webp",
         },
         {
           "name": "Designer Toran",
@@ -159,7 +158,6 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
   };
 
   @override
-  @override
   Widget build(BuildContext context) {
     final data =
         categoryData[widget.category] ??
@@ -170,6 +168,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
 
     return AppShell(
       selectedIndex: 1,
+      selectedDrawerItem: "Categories",
       child: Stack(
         children: [
           Positioned.fill(
@@ -262,12 +261,22 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
       itemBuilder: (context, index) {
         final product = products[index];
 
-        return _buildProductCard(
-          name: product["name"],
-          rating: product["rating"],
-          price: product["price"],
-          oldPrice: product["oldPrice"],
-          image: product["image"],
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetailItemScreen(product: product),
+              ),
+            );
+          },
+          child: _buildProductCard(
+            name: product["name"],
+            rating: product["rating"],
+            price: product["price"],
+            oldPrice: product["oldPrice"],
+            image: product["image"],
+          ),
         );
       },
     );

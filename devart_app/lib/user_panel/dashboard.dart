@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       selectedIndex: 0,
+      selectedDrawerItem: "Home",
       child: SafeArea(
         child: Stack(
           children: [

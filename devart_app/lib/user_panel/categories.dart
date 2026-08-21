@@ -53,6 +53,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget build(BuildContext context) {
     return AppShell(
       selectedIndex: 1,
+      selectedDrawerItem: "Categories",
       child: Stack(
         children: [
           Positioned.fill(

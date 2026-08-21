@@ -8,8 +8,14 @@ import 'package:devart/user_panel/categories.dart';
 class AppShell extends StatelessWidget {
   final Widget child;
   final int selectedIndex;
+  final String selectedDrawerItem;
 
-  const AppShell({super.key, required this.child, required this.selectedIndex});
+  const AppShell({
+    super.key,
+    required this.child,
+    required this.selectedIndex,
+    required this.selectedDrawerItem,
+  });
 
   void _navigate(BuildContext context, int index) {
     if (index == selectedIndex) return;
@@ -38,8 +44,23 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String _getSelectedItem() {
+      switch (selectedIndex) {
+        case 0:
+          return "Home";
+        case 1:
+          return "Categories";
+        case 2:
+          return "Orders";
+        case 3:
+          return "Account";
+        default:
+          return "Home";
+      }
+    }
+
     return Scaffold(
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(selectedItem: selectedDrawerItem),
 
       appBar: AppBar(
         backgroundColor: const Color(0xFFBFD5FA),

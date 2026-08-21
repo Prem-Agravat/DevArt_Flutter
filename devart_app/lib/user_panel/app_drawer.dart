@@ -1,8 +1,28 @@
-import 'package:devart/user_panel/categories.dart';
 import 'package:flutter/material.dart';
+import 'package:devart/user_panel/dashboard.dart';
+import 'package:devart/user_panel/categories.dart';
+import 'package:devart/user_panel/orders.dart';
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  final String selectedItem;
+
+  const AppDrawer({super.key, required this.selectedItem});
+
+  void _navigate(BuildContext context, String item, Widget page) {
+    if (item == selectedItem) {
+      Navigator.pop(context);
+      return;
+    }
+
+    Navigator.pop(context);
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => page),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,39 +57,38 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.home,
                 title: "Home",
-                selected: true,
+                selected: selectedItem == "Home",
+                onTap: () {
+                  _navigate(context, "Home", const HomeScreen());
+                },
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.category_outlined,
                 title: "Categories",
+                selected: selectedItem == "Categories",
                 onTap: () {
-                  Navigator.pop(context);
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CategoriesScreen()),
-                  );
+                  _navigate(context, "Categories", const CategoriesScreen());
                 },
-              ),
-
-              _buildMenuItem(
-                context,
-                icon: Icons.grid_view_outlined,
-                title: "All Items",
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.favorite_border,
                 title: "Wishlist",
+                selected: selectedItem == "Wishlist",
+                onTap: () {},
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.receipt_long_outlined,
                 title: "Orders",
+                selected: selectedItem == "Orders",
+                onTap: () {
+                  _navigate(context, "Orders", const OrdersScreen());
+                },
               ),
 
               const Padding(
@@ -81,24 +100,32 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.person_outline,
                 title: "My Profile",
+                selected: selectedItem == "My Profile",
+                onTap: () {},
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.location_on_outlined,
                 title: "Shipping Addresses",
+                selected: selectedItem == "Shipping Addresses",
+                onTap: () {},
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.payments_outlined,
                 title: "Payment Methods",
+                selected: selectedItem == "Payment Methods",
+                onTap: () {},
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.person_outline,
                 title: "Help&Support",
+                selected: selectedItem == "Help&Support",
+                onTap: () {},
               ),
 
               const Spacer(),
@@ -158,17 +185,13 @@ class AppDrawer extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
-    bool selected = false,
-    VoidCallback? onTap,
+    required bool selected,
+    required VoidCallback onTap,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: GestureDetector(
-        onTap:
-            onTap ??
-            () {
-              Navigator.pop(context);
-            },
+        onTap: onTap,
         child: Container(
           height: 43,
           padding: const EdgeInsets.symmetric(horizontal: 16),
