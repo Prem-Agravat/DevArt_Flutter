@@ -24,23 +24,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     {
       "name": "CushionCovers",
       "price": "25",
-      "image": "lib/assets/images/cushion-cover.png",
+      "image": "lib/assets/images/devart_product_1.webp",
     },
-    {"name": "Toran", "price": "115", "image": "lib/assets/images/toran.png"},
+    {
+      "name": "Toran",
+      "price": "115",
+      "image": "lib/assets/images/devart_product_1.webp",
+    },
     {
       "name": "SofaCovers",
       "price": "50",
-      "image": "lib/assets/images/cushion-cover.png",
+      "image": "lib/assets/images/devart_product_1.webp",
     },
     {
       "name": "HomeDecor",
       "price": "66",
-      "image": "lib/assets/images/cushion-cover.png",
+      "image": "lib/assets/images/devart_product_1.webp",
     },
     {
       "name": "Bedsheets",
       "price": "18",
-      "image": "lib/assets/images/cushion-cover.png",
+      "image": "lib/assets/images/devart_product_1.webp",
     },
   ];
 
@@ -52,7 +56,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart_bgimage_dashboard.png",
+              "lib/assets/images/devart_bgimg_home.png",
               fit: BoxFit.cover,
             ),
           ),
@@ -137,6 +141,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               setState(() {
                 selectedCategory = index;
               });
+
+              if (index != 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SelectedCategoryScreen(category: categories[index]),
+                  ),
+                );
+              }
             },
             child: Container(
               margin: const EdgeInsets.only(right: 5),
@@ -182,10 +196,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       itemBuilder: (context, index) {
         final product = products[index];
 
-        return _buildProductCard(
-          name: product["name"],
-          price: product["price"],
-          image: product["image"],
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    SelectedCategoryScreen(category: product["name"]),
+              ),
+            );
+          },
+          child: _buildProductCard(
+            name: product["name"],
+            price: product["price"],
+            image: product["image"],
+          ),
         );
       },
     );

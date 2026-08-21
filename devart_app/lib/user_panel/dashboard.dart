@@ -1,5 +1,7 @@
+import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/categories.dart';
+import 'package:devart/user_panel/selected_category.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,10 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFF7F5F2),
-      body: SafeArea(
+    return AppShell(
+      selectedIndex: 0,
+      child: SafeArea(
         child: Stack(
           children: [
             Positioned.fill(
@@ -45,13 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             Positioned.fill(
               child: Container(color: Colors.white.withOpacity(0.35)),
             ),
             Column(
               children: [
-                _buildTopBar(),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
@@ -71,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           _buildSectionHeader("Featured", "Seeall"),
                           const SizedBox(height: 8),
                           _buildFeaturedGrid(),
-                          const SizedBox(height: 10),
                         ],
                       ),
                     ),
@@ -82,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -179,7 +176,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            if (title == "Categories") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CategoriesScreen(),
+                ),
+              );
+            }
+          },
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
             minimumSize: Size.zero,
@@ -378,6 +384,13 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _selectedIndex = index;
           });
+
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CategoriesScreen()),
+            );
+          }
         },
         backgroundColor: Colors.transparent,
         elevation: 0,
