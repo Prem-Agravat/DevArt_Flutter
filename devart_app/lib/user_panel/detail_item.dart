@@ -82,8 +82,9 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
     return SizedBox(
       height: 310,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(11, 20, 11, 0),
+        padding: const EdgeInsets.fromLTRB(10, 20, 10, 0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Column(
@@ -105,12 +106,11 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      images.length,
-                      (index) => Container(
+                    children: List.generate(images.length, (index) {
+                      return Container(
                         width: 9,
                         height: 9,
                         margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -120,8 +120,8 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                               ? Colors.grey
                               : Colors.grey.shade400,
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -129,33 +129,36 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
             const SizedBox(width: 30),
             SizedBox(
               width: 91,
-              child: ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: images.length > 4 ? 4 : images.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedImage = index;
-                      });
-                    },
-                    child: Container(
-                      height: 72,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: selectedImage == index
-                              ? const Color(0xFFA06D42)
-                              : const Color(0xFFD8C8A5),
-                          width: selectedImage == index ? 2 : 1,
+              child: Column(
+                children: List.generate(images.length > 4 ? 4 : images.length, (
+                  index,
+                ) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 7),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedImage = index;
+                        });
+                      },
+                      child: Container(
+                        height: 72,
+                        width: 91,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: selectedImage == index
+                                ? const Color(0xFFA06D42)
+                                : const Color(0xFFD8C8A5),
+                            width: selectedImage == index ? 2 : 1,
+                          ),
                         ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.asset(images[index], fit: BoxFit.cover),
                       ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Image.asset(images[index], fit: BoxFit.cover),
                     ),
                   );
-                },
+                }),
               ),
             ),
           ],

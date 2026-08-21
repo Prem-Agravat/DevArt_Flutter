@@ -18,13 +18,6 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
           "Explore our complete collection of premium\nhandcrafted home decor products.",
       "products": [
         {
-          "name": "IndigoGeometry",
-          "rating": "4.5",
-          "price": "₹899",
-          "oldPrice": "₹1090",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
           "name": "Traditional Toran",
           "rating": "4.5",
           "price": "₹599",
@@ -68,9 +61,16 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
         {
           "name": "IndigoGeometry",
           "rating": "4.5",
+          "reviews": 109,
           "price": "₹899",
           "oldPrice": "₹1090",
           "image": "lib/assets/images/devart_product_1.webp",
+          "images": [
+            "lib/assets/images/devart_product_1.webp",
+            "lib/assets/images/devart_product_1.webp",
+            "lib/assets/images/devart_product_1.webp",
+          ],
+          "sizes": ["16×16", "18×18", "20×20"],
         },
         {
           "name": "IndigoGeometry",
