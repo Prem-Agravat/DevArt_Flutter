@@ -90,7 +90,7 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),

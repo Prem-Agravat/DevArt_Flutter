@@ -207,12 +207,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildTitle() {
     return Container(
       height: 64,
-      color: const Color(0xFFFFF5F3),
+      color: const Color(0xFFF5E9E5),
       child: Row(
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),
@@ -221,15 +221,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Text(
                 "Edit Profile",
                 style: TextStyle(
-                  fontSize: 29,
+                  fontSize: 31,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFB66D6D),
+                  color: Color(0xFFB56F6F),
                   fontFamily: "serif",
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 48),
         ],
       ),
     );

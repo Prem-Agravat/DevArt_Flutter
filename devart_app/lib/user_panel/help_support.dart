@@ -114,12 +114,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   Widget _buildTitle() {
     return Container(
       height: 64,
-      color: const Color(0xFFFFF5F3),
+      color: const Color(0xFFF5E9E5),
       child: Row(
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),

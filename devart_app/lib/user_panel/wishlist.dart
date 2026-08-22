@@ -88,12 +88,12 @@ class _WishlistScreenState extends State<WishlistScreen> {
   Widget _buildTitle() {
     return Container(
       height: 64,
-      color: const Color(0xFFFFF5F3),
+      color: const Color(0xFFF5E9E5),
       child: Row(
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),
@@ -102,9 +102,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
               child: Text(
                 "Wishlist",
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 31,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFB66D6D),
+                  color: Color(0xFFB56F6F),
                   fontFamily: "serif",
                 ),
               ),

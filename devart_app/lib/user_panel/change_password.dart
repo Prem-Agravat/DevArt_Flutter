@@ -354,12 +354,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget _buildProfileTitle() {
     return Container(
       height: 64,
-      color: const Color(0xFFFFF5F3),
+      color: const Color(0xFFF5E9E5),
       child: Row(
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             icon: const Icon(
               Icons.arrow_back_ios_new,
@@ -372,9 +372,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               child: Text(
                 "ChangePassword",
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 31,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFB66D6D),
+                  color: Color(0xFFB56F6F),
                   fontFamily: "serif",
                 ),
               ),

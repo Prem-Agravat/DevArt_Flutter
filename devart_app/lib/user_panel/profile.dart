@@ -189,29 +189,18 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildTitle() {
     return Container(
-      height: 64,
-      color: const Color(0xFFFFF5F3),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.arrow_back_ios_new, size: 22),
-          ),
-          const Expanded(
-            child: Center(
-              child: Text(
-                "Profile",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFB66D6D),
-                  fontFamily: "serif",
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 48),
-        ],
+      height: 59,
+      width: double.infinity,
+      color: const Color(0xFFF5E9E5),
+      alignment: Alignment.center,
+      child: const Text(
+        "Profile",
+        style: TextStyle(
+          fontSize: 31,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFFB56F6F),
+          fontFamily: "serif",
+        ),
       ),
     );
   }
