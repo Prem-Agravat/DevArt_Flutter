@@ -1,6 +1,6 @@
 import 'package:devart/user_panel/dashboard.dart';
 import 'package:flutter/material.dart';
-import 'package:devart/user_panel/splash.dart';
+//import 'package:devart/user_panel/splash.dart';
 
 void main() {
   runApp(const MyApp());

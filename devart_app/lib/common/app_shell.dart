@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/categories.dart';
 //import 'package:devart/user_panel/account.dart';
+import 'package:devart/user_panel/cart.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -87,7 +88,12 @@ class AppShell extends StatelessWidget {
 
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
             icon: const Icon(
               Icons.shopping_cart,
               size: 32,
