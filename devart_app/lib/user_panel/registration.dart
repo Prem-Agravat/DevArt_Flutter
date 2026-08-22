@@ -117,7 +117,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             left: 15,
             child: IconButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               },
               icon: Container(
                 decoration: const BoxDecoration(
