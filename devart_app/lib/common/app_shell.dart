@@ -1,8 +1,9 @@
-import 'package:devart/user_panel/app_drawer.dart';
-import 'package:devart/user_panel/orders.dart';
 import 'package:flutter/material.dart';
+import 'package:devart/user_panel/app_drawer.dart';
 import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/categories.dart';
+import 'package:devart/user_panel/orders.dart';
+import 'package:devart/user_panel/profile.dart';
 import 'package:devart/user_panel/cart.dart';
 
 class AppShell extends StatelessWidget {
@@ -22,7 +23,9 @@ class AppShell extends StatelessWidget {
   });
 
   void _navigate(BuildContext context, int index) {
-    if (index == selectedIndex) return;
+    if (index == selectedIndex) {
+      return;
+    }
 
     Widget page;
 
@@ -30,17 +33,31 @@ class AppShell extends StatelessWidget {
       case 0:
         page = const HomeScreen();
         break;
+
       case 1:
         page = const CategoriesScreen();
         break;
+
       case 2:
         page = const OrdersScreen();
         break;
+
+      case 3:
+        page = const ProfileScreen();
+        break;
+
       default:
         return;
     }
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  void _openCart(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartScreen()),
+    );
   }
 
   @override
@@ -71,10 +88,7 @@ class AppShell extends StatelessWidget {
           if (showCart)
             IconButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartScreen()),
-                );
+                _openCart(context);
               },
               icon: const Icon(
                 Icons.shopping_cart,
@@ -95,7 +109,7 @@ class AppShell extends StatelessWidget {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.20)),
+            child: Container(color: Colors.white.withOpacity(0.10)),
           ),
           child,
         ],
@@ -117,7 +131,9 @@ class AppShell extends StatelessWidget {
               ),
               child: BottomNavigationBar(
                 currentIndex: selectedIndex,
-                onTap: (index) => _navigate(context, index),
+                onTap: (index) {
+                  _navigate(context, index);
+                },
                 type: BottomNavigationBarType.fixed,
                 backgroundColor: Colors.transparent,
                 elevation: 0,
