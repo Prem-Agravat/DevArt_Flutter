@@ -1,3 +1,4 @@
+import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/add_address.dart';
 import 'package:devart/user_panel/payment.dart';
@@ -14,74 +15,65 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
+    return AppShell(
+      selectedIndex: 0,
+      selectedDrawerItem: "Delivery Address",
+      showCart: false,
+      showBottomNav: false,
+      child: SafeArea(
+        top: false,
+        child: Column(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                "lib/assets/images/devart-bgimage.png",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.72)),
-            ),
-            Column(
-              children: [
-                _buildTopBar(),
-                _buildTitle(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(25, 25, 25, 30),
-                    child: Column(
-                      children: [
-                        _buildSteps(),
-                        const SizedBox(height: 25),
-                        _buildAddressCard(
-                          0,
-                          "Home",
-                          "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
-                        ),
-                        const SizedBox(height: 14),
-                        _buildAddressCard(
-                          1,
-                          "Office",
-                          "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
-                        ),
-                        const SizedBox(height: 25),
-                        _buildAddAddress(),
-                        const SizedBox(height: 70),
-                        SizedBox(
-                          width: 280,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const PaymentScreen(),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFA06D42),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
+            _buildTitle(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 18, 24, 30),
+                child: Column(
+                  children: [
+                    _buildSteps(),
+                    const SizedBox(height: 22),
+                    _buildAddressCard(
+                      0,
+                      "Home",
+                      "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
+                    ),
+                    const SizedBox(height: 14),
+                    _buildAddressCard(
+                      1,
+                      "Office",
+                      "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
+                    ),
+                    const SizedBox(height: 25),
+                    _buildAddAddress(),
+                    const SizedBox(height: 70),
+                    SizedBox(
+                      width: 280,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PaymentScreen(),
                             ),
-                            child: const Text(
-                              "Continue to Payment  →",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA06D42),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                      ],
+                        child: const Text(
+                          "Continue to Payment  →",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -89,46 +81,34 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTitle() {
     return Container(
-      height: 85,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      color: const Color(0xFFC3D9FF),
+      height: 64,
+      width: double.infinity,
+      color: const Color(0xFFFFF5F3),
       child: Row(
         children: [
           IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.arrow_back_ios_new, size: 25),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),
-          const Spacer(),
-          Image.asset(
-            "lib/assets/images/devart-logo.png",
-            width: 70,
-            height: 70,
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Delivery Address",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB66D6D),
+                  fontFamily: "serif",
+                ),
+              ),
+            ),
           ),
-          const Spacer(),
           const SizedBox(width: 48),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTitle() {
-    return Container(
-      height: 64,
-      color: const Color(0xFFFFF5F3),
-      child: const Center(
-        child: Text(
-          "Delivery Address",
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFB66D6D),
-            fontFamily: "serif",
-          ),
-        ),
       ),
     );
   }
@@ -138,8 +118,9 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: const [
         _StepItem(number: "1", title: "Address", active: true),
+        Text(">", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         _StepItem(number: "2", title: "Payment"),
-        Text(">", style: TextStyle(fontSize: 20)),
+        Text(">", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         _StepItem(number: "3", title: "Confirm"),
       ],
     );
@@ -156,7 +137,7 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: const Color(0xFFD8D8D8),
           borderRadius: BorderRadius.circular(20),
@@ -201,7 +182,7 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAddressScreen()),
+          MaterialPageRoute(builder: (_) => const AddAddressScreen()),
         );
       },
       child: Container(
@@ -210,11 +191,7 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.65),
           borderRadius: BorderRadius.circular(35),
-          border: Border.all(
-            color: const Color(0xFFD7BFAF),
-            width: 4,
-            strokeAlign: BorderSide.strokeAlignInside,
-          ),
+          border: Border.all(color: const Color(0xFFD7BFAF), width: 3),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,

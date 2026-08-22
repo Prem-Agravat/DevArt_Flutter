@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:devart/common/app_shell.dart';
 import 'package:devart/user_panel/confirm_order.dart';
+import 'package:flutter/material.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -13,82 +14,75 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
+    return AppShell(
+      selectedIndex: 0,
+      selectedDrawerItem: "Payment",
+      showCart: false,
+      showBottomNav: false,
+      child: SafeArea(
+        top: false,
+        child: Column(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                "lib/assets/images/devart-bgimage.png",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.72)),
-            ),
-            Column(
-              children: [
-                _buildTopBar(),
-                _buildTitle(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(25, 12, 25, 30),
-                    child: Column(
-                      children: [
-                        _buildSteps(),
-                        const SizedBox(height: 20),
-                        _paymentCard(
-                          0,
-                          Icons.credit_card_outlined,
-                          "Credit/Debit Card",
-                          "----------4242",
-                        ),
-                        _paymentCard(
-                          1,
-                          Icons.account_balance_outlined,
-                          "UPI/NetBanking",
-                          "PayviaanyUPIApp",
-                        ),
-                        _paymentCard(
-                          2,
-                          Icons.payments_outlined,
-                          "CashOnDelivery",
-                          "PayWhenDelivered",
-                        ),
-                        const SizedBox(height: 20),
-                        _buildOrderTotal(),
-                        const SizedBox(height: 35),
-                        SizedBox(
-                          width: 280,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const ConfirmOrderScreen(),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFA06D42),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
+            _buildTitle(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(25, 15, 25, 30),
+                child: Column(
+                  children: [
+                    _buildSteps(),
+                    const SizedBox(height: 22),
+                    _buildPaymentCard(
+                      0,
+                      Icons.credit_card_outlined,
+                      "Credit/Debit Card",
+                      "----------4242",
+                    ),
+                    _buildPaymentCard(
+                      1,
+                      Icons.account_balance_outlined,
+                      "UPI/NetBanking",
+                      "Pay via any UPI App",
+                    ),
+                    _buildPaymentCard(
+                      2,
+                      Icons.payments_outlined,
+                      "Cash On Delivery",
+                      "Pay When Delivered",
+                    ),
+                    const SizedBox(height: 18),
+                    _buildOrderTotal(),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: 280,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ConfirmOrderScreen(),
                             ),
-                            child: const Text(
-                              "Pay ₹870  →",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA06D42),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                      ],
+                        child: const Text(
+                          "Pay ₹870  →",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -96,23 +90,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTitle() {
     return Container(
-      height: 85,
-      color: const Color(0xFFC3D9FF),
+      height: 64,
+      width: double.infinity,
+      color: const Color(0xFFFFF5F3),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.arrow_back_ios_new, size: 25),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),
-          Image.asset(
-            "lib/assets/images/devart-logo.png",
-            width: 70,
-            height: 70,
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Payment",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB66D6D),
+                  fontFamily: "serif",
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 48),
         ],
@@ -120,38 +122,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildTitle() {
-    return Container(
-      height: 64,
-      color: const Color(0xFFFFF5F3),
-      child: const Center(
-        child: Text(
-          "Payment",
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFB66D6D),
-            fontFamily: "serif",
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSteps() {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
+      children: [
         _PaymentStep(number: "✓", title: "Address", active: true),
-        Text(">"),
+        Text(">", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         _PaymentStep(number: "2", title: "Payment", active: true),
-        Text(">"),
+        Text(">", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         _PaymentStep(number: "3", title: "Confirm"),
       ],
     );
   }
 
-  Widget _paymentCard(int index, IconData icon, String title, String subtitle) {
+  Widget _buildPaymentCard(
+    int index,
+    IconData icon,
+    String title,
+    String subtitle,
+  ) {
     final selected = selectedPayment == index;
 
     return GestureDetector(
@@ -161,9 +150,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(20),
+        width: double.infinity,
         height: 98,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         decoration: BoxDecoration(
           color: const Color(0xFFD8D8D8),
           borderRadius: BorderRadius.circular(15),
@@ -180,12 +170,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   Text(
                     title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 19,
                       fontWeight: FontWeight.bold,
                       fontFamily: "serif",
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: const TextStyle(
@@ -213,7 +206,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         const Padding(
           padding: EdgeInsets.only(left: 10),
           child: Text(
-            "OrderTotal",
+            "Order Total",
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -223,6 +216,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
         const SizedBox(height: 5),
         Container(
+          width: double.infinity,
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -234,14 +228,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 offset: const Offset(0, 3),
               ),
             ],
+            border: const Border(
+              left: BorderSide(color: Colors.black, width: 3),
+            ),
           ),
           child: Column(
             children: [
-              _row("2Item", "₹899.00"),
-              _row("Discount", "-₹29.00", red: true),
-              _row("Delivery", "Free"),
+              _summaryRow("2 Item", "₹899.00"),
+              _summaryRow("Discount", "-₹29.00", color: Colors.red),
+              _summaryRow("Delivery", "Free"),
               const Divider(),
-              _row("Total", "₹870.00", green: true, large: true),
+              _summaryRow("Total", "₹870.00", large: true, color: Colors.green),
             ],
           ),
         ),
@@ -249,11 +246,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _row(
+  Widget _summaryRow(
     String title,
     String value, {
-    bool red = false,
-    bool green = false,
+    Color? color,
     bool large = false,
   }) {
     return Padding(
@@ -273,11 +269,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             style: TextStyle(
               fontSize: large ? 20 : 13,
               fontWeight: FontWeight.bold,
-              color: red
-                  ? Colors.red
-                  : green
-                  ? Colors.green
-                  : Colors.black,
+              color: color ?? Colors.black,
             ),
           ),
         ],
@@ -314,6 +306,7 @@ class _PaymentStep extends StatelessWidget {
               number,
               style: TextStyle(
                 color: active ? Colors.white : Colors.black,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:devart/common/app_shell.dart';
 import 'package:devart/user_panel/delivery_address.dart';
+import 'package:flutter/material.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -9,13 +10,14 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  final TextEditingController _promoController = TextEditingController();
+
   final List<_CartItem> _items = [
     _CartItem(
       name: "IndigoGeometry",
       category: "Handwoven-cotton",
       price: 899,
       oldPrice: 1099,
-      quantity: 1,
       image: "lib/assets/images/devart_product_1.webp",
     ),
     _CartItem(
@@ -23,10 +25,25 @@ class _CartScreenState extends State<CartScreen> {
       category: "Handwoven-cotton",
       price: 899,
       oldPrice: 1099,
-      quantity: 1,
       image: "lib/assets/images/devart_product_1.webp",
     ),
   ];
+
+  double get subtotal {
+    return _items.fold(0, (sum, item) => sum + item.price * item.quantity);
+  }
+
+  double get shipping {
+    return _items.isEmpty ? 0 : 36;
+  }
+
+  double get tax {
+    return subtotal * 0.05;
+  }
+
+  double get total {
+    return subtotal + shipping - 29;
+  }
 
   void _increase(int index) {
     setState(() {
@@ -48,103 +65,59 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
-  double get subtotal {
-    return _items.fold(0, (sum, item) => sum + (item.price * item.quantity));
-  }
-
-  double get shipping {
-    return _items.isEmpty ? 0 : 36;
-  }
-
-  double get tax {
-    return subtotal * 0.05;
-  }
-
-  double get total {
-    return subtotal + shipping - tax;
+  @override
+  void dispose() {
+    _promoController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
+    return AppShell(
+      selectedIndex: 0,
+      selectedDrawerItem: "Cart",
+      showCart: true,
+      showBottomNav: true,
+      child: SafeArea(
+        top: false,
+        child: Column(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                "lib/assets/images/devart-bgimage.png",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.72)),
-            ),
-            Column(
-              children: [
-                _buildTopBar(),
-                _buildTitle(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(17, 12, 17, 20),
-                    child: Column(
-                      children: [
-                        ...List.generate(
-                          _items.length,
-                          (index) => _buildCartItem(index),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildPromoCode(),
-                        const SizedBox(height: 15),
-                        _buildOrderSummary(),
-                        const SizedBox(height: 12),
-                        _buildCheckoutButton(),
-                        const SizedBox(height: 5),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            "Continue Shopping",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ],
+            _buildTitle(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(17, 12, 17, 20),
+                child: Column(
+                  children: [
+                    ...List.generate(
+                      _items.length,
+                      (index) => _buildCartItem(index),
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    _buildPromoCode(),
+                    const SizedBox(height: 12),
+                    _buildOrderSummary(),
+                    const SizedBox(height: 12),
+                    _buildCheckoutButton(),
+                    const SizedBox(height: 5),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "Continue Shopping",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: _buildBottomNavigation(),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      height: 85,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(color: Color(0xFFC3D9FF)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.menu, size: 34)),
-          Image.asset(
-            "lib/assets/images/devart-logo.png",
-            width: 70,
-            height: 70,
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.shopping_cart, size: 34),
-          ),
-        ],
       ),
     );
   }
@@ -190,7 +163,7 @@ class _CartScreenState extends State<CartScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(width: 15),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -198,6 +171,8 @@ class _CartScreenState extends State<CartScreen> {
               children: [
                 Text(
                   item.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -207,11 +182,11 @@ class _CartScreenState extends State<CartScreen> {
                 Text(
                   item.category,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Text(
@@ -243,7 +218,7 @@ class _CartScreenState extends State<CartScreen> {
                 child: const Icon(Icons.close, size: 24),
               ),
               Container(
-                height: 28,
+                height: 30,
                 decoration: BoxDecoration(
                   color: const Color(0xFFC99FA0),
                   borderRadius: BorderRadius.circular(15),
@@ -251,9 +226,9 @@ class _CartScreenState extends State<CartScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 35),
                       onPressed: () => _decrease(index),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32),
                       icon: const Icon(Icons.remove, size: 17),
                     ),
                     Text(
@@ -261,9 +236,9 @@ class _CartScreenState extends State<CartScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 35),
                       onPressed: () => _increase(index),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32),
                       icon: const Icon(Icons.add, size: 17),
                     ),
                   ],
@@ -288,36 +263,29 @@ class _CartScreenState extends State<CartScreen> {
             fontFamily: "serif",
           ),
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 5),
         Row(
           children: [
             Expanded(
-              child: Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD8D8D8),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.sell_outlined),
-                    SizedBox(width: 10),
-                    Text(
-                      "ApplyCouponCode",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              child: TextField(
+                controller: _promoController,
+                decoration: InputDecoration(
+                  hintText: "Enter Promo Code",
+                  prefixIcon: const Icon(Icons.sell_outlined),
+                  filled: true,
+                  fillColor: const Color(0xFFD8D8D8),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 5),
                 ),
               ),
             ),
             const SizedBox(width: 10),
             SizedBox(
               width: 85,
-              height: 38,
+              height: 50,
               child: ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
@@ -341,7 +309,7 @@ class _CartScreenState extends State<CartScreen> {
           child: TextButton(
             onPressed: () {},
             child: const Text(
-              "ViewAvailableOffers",
+              "View Available Offers",
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 11,
@@ -359,14 +327,14 @@ class _CartScreenState extends State<CartScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "OrderSummery",
+          "Order Summery",
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
             fontFamily: "serif",
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -374,37 +342,23 @@ class _CartScreenState extends State<CartScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withOpacity(0.18),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),
             ],
-            border: const Border(
-              left: BorderSide(color: Colors.black, width: 3),
-            ),
           ),
           child: Column(
             children: [
               _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
               _summaryRow("Shipping", "₹${shipping.toStringAsFixed(2)}"),
-              _summaryRow("Tax(5%)", "₹${tax.toStringAsFixed(2)}"),
+              _summaryRow("Tax (5%)", "₹${tax.toStringAsFixed(2)}"),
               const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Total",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "₹${total.toStringAsFixed(2)}",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
+              _summaryRow(
+                "Total",
+                "₹${total.toStringAsFixed(2)}",
+                large: true,
+                green: true,
               ),
             ],
           ),
@@ -413,14 +367,32 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _summaryRow(String title, String value) {
+  Widget _summaryRow(
+    String title,
+    String value, {
+    bool large = false,
+    bool green = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: large ? 20 : 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: large ? 20 : 13,
+              fontWeight: FontWeight.bold,
+              color: green ? Colors.green : Colors.black,
+            ),
+          ),
         ],
       ),
     );
@@ -431,14 +403,16 @@ class _CartScreenState extends State<CartScreen> {
       width: 280,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const DeliveryAddressScreen(),
-            ),
-          );
-        },
+        onPressed: _items.isEmpty
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DeliveryAddressScreen(),
+                  ),
+                );
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFA06D42),
           foregroundColor: Colors.white,
@@ -448,35 +422,9 @@ class _CartScreenState extends State<CartScreen> {
         ),
         child: const Text(
           "Proceed to Checkout  →",
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return BottomNavigationBar(
-      currentIndex: 2,
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color(0xFFC3D9FF),
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.black,
-      onTap: (index) {},
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home"),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assignment_outlined),
-          label: "Categories",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.inventory_2_outlined),
-          label: "Orders",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle_outlined),
-          label: "Account",
-        ),
-      ],
     );
   }
 }
@@ -494,7 +442,7 @@ class _CartItem {
     required this.category,
     required this.price,
     required this.oldPrice,
-    required this.quantity,
     required this.image,
+    this.quantity = 1,
   });
 }

@@ -1,3 +1,4 @@
+import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
 
 class AddAddressScreen extends StatefulWidget {
@@ -41,7 +42,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     Navigator.pop(context);
   }
 
-  InputDecoration _decoration({required String hint, required IconData icon}) {
+  InputDecoration _inputDecoration({
+    required String hint,
+    required IconData icon,
+  }) {
     return InputDecoration(
       hintText: hint,
       prefixIcon: Icon(icon, color: const Color(0xFF806F65)),
@@ -66,252 +70,251 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
+    return AppShell(
+      selectedIndex: 0,
+      selectedDrawerItem: "Add New Address",
+      showCart: false,
+      showBottomNav: false,
+      child: SafeArea(
+        top: false,
+        child: Column(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                "lib/assets/images/devart-bgimage.png",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned.fill(
-              child: Container(
-                color: const Color(0xFFDCEBFF).withOpacity(0.65),
-              ),
-            ),
-            SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(30, 15, 30, 30),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.arrow_back_ios_new, size: 25),
+            _buildTitle(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(30, 20, 30, 30),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(24, 25, 24, 25),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.94),
+                          borderRadius: BorderRadius.circular(25),
                         ),
-                        const Spacer(),
-                        Image.asset(
-                          "lib/assets/images/devart-logo.png",
-                          width: 100,
-                          height: 100,
-                        ),
-                        const Spacer(),
-                        const SizedBox(width: 48),
-                      ],
-                    ),
-                    const Text(
-                      "Add New Address",
-                      style: TextStyle(
-                        fontSize: 27,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFA06D42),
-                        fontFamily: "serif",
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(24, 25, 24, 25),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _label("CONTACT DETAILS"),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: _decoration(
-                              hint: "Full Name",
-                              icon: Icons.person_outline,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _label("CONTACT DETAILS"),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _nameController,
+                              decoration: _inputDecoration(
+                                hint: "Full Name",
+                                icon: Icons.person_outline,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "Enter your name";
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return "Enter your name";
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            decoration: _decoration(
-                              hint: "Phone Number",
-                              icon: Icons.phone_outlined,
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: _inputDecoration(
+                                hint: "Phone Number",
+                                icon: Icons.phone_outlined,
+                              ),
+                              validator: (value) {
+                                if (value == null ||
+                                    !RegExp(
+                                      r'^[0-9]{10}$',
+                                    ).hasMatch(value.trim())) {
+                                  return "Enter valid phone number";
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null ||
-                                  !RegExp(
-                                    r'^[0-9]{10}$',
-                                  ).hasMatch(value.trim())) {
-                                return "Enter valid phone number";
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 30),
-                          _label("ADDRESS DETAILS"),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _houseController,
-                            maxLines: 2,
-                            decoration: _decoration(
-                              hint: "Flat/House No., Building,\nApartment",
-                              icon: Icons.apartment,
+                            const SizedBox(height: 28),
+                            _label("ADDRESS DETAILS"),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _houseController,
+                              maxLines: 2,
+                              decoration: _inputDecoration(
+                                hint: "Flat/House No., Building,\nApartment",
+                                icon: Icons.apartment,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "Enter address";
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return "Enter address";
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _areaController,
-                            decoration: _decoration(
-                              hint: "Area, Colony, Street, Sector",
-                              icon: Icons.location_on_outlined,
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _areaController,
+                              decoration: _inputDecoration(
+                                hint: "Area, Colony, Street, Sector",
+                                icon: Icons.location_on_outlined,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "Enter area";
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return "Enter area";
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _landmarkController,
-                            decoration: _decoration(
-                              hint: "Landmark (Optional)",
-                              icon: Icons.flag_outlined,
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _landmarkController,
+                              decoration: _inputDecoration(
+                                hint: "Landmark (Optional)",
+                                icon: Icons.flag_outlined,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _pincodeController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: _decoration(
-                                    hint: "Pincode",
-                                    icon: Icons.location_on_outlined,
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _pincodeController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: _inputDecoration(
+                                      hint: "Pincode",
+                                      icon: Icons.location_on_outlined,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null ||
+                                          !RegExp(
+                                            r'^[0-9]{6}$',
+                                          ).hasMatch(value.trim())) {
+                                        return "Invalid";
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null ||
-                                        !RegExp(
-                                          r'^[0-9]{6}$',
-                                        ).hasMatch(value.trim())) {
-                                      return "Invalid";
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _cityController,
-                                  decoration: _decoration(
-                                    hint: "Town/City",
-                                    icon: Icons.location_city_outlined,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _cityController,
+                                    decoration: _inputDecoration(
+                                      hint: "Town/City",
+                                      icon: Icons.location_city_outlined,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return "Required";
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return "Required";
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          DropdownButtonFormField<String>(
-                            value: selectedState,
-                            decoration: _decoration(
-                              hint: "Select State",
-                              icon: Icons.map_outlined,
+                              ],
                             ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: "Gujarat",
-                                child: Text("Gujarat"),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              value: selectedState,
+                              decoration: _inputDecoration(
+                                hint: "Select State",
+                                icon: Icons.map_outlined,
                               ),
-                              DropdownMenuItem(
-                                value: "Maharashtra",
-                                child: Text("Maharashtra"),
-                              ),
-                              DropdownMenuItem(
-                                value: "Rajasthan",
-                                child: Text("Rajasthan"),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                selectedState = value;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null) {
-                                return "Select state";
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 30),
-                          _label("SAVE AS"),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              _saveButton("Home", Icons.home_outlined),
-                              const SizedBox(width: 12),
-                              _saveButton("Office", Icons.work_outline),
-                              const SizedBox(width: 12),
-                              _saveButton("Other", Icons.more_horiz),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 35),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 58,
-                      child: ElevatedButton(
-                        onPressed: _saveAddress,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFA06D42),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          "Save Address  ▣",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: "Gujarat",
+                                  child: Text("Gujarat"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "Maharashtra",
+                                  child: Text("Maharashtra"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "Rajasthan",
+                                  child: Text("Rajasthan"),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedState = value;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null) {
+                                  return "Select state";
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 28),
+                            _label("SAVE AS"),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                _saveButton("Home", Icons.home_outlined),
+                                const SizedBox(width: 10),
+                                _saveButton("Office", Icons.work_outline),
+                                const SizedBox(width: 10),
+                                _saveButton("Other", Icons.more_horiz),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 25),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _saveAddress,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFA06D42),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: const Text(
+                            "Save Address  ▣",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return Container(
+      height: 64,
+      width: double.infinity,
+      color: const Color(0xFFFFF5F3),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.arrow_back_ios_new, size: 22),
+          ),
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Add New Address",
+                style: TextStyle(
+                  fontSize: 27,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB66D6D),
+                  fontFamily: "serif",
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 48),
+        ],
       ),
     );
   }

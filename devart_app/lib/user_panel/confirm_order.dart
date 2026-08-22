@@ -1,3 +1,4 @@
+import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
 
 class ConfirmOrderScreen extends StatelessWidget {
@@ -5,108 +6,99 @@ class ConfirmOrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
+    return AppShell(
+      selectedIndex: 0,
+      selectedDrawerItem: "Confirm Order",
+      showCart: false,
+      showBottomNav: false,
+      child: SafeArea(
+        top: false,
+        child: Column(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                "lib/assets/images/devart-bgimage.png",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.72)),
-            ),
-            Column(
-              children: [
-                _buildTopBar(context),
-                _buildTitle(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-                    child: Column(
+            _buildTitle(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    const Icon(
+                      Icons.check_circle,
+                      size: 125,
+                      color: Color(0xFF79A985),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      "Order Placed!",
+                      style: TextStyle(
+                        fontSize: 27,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "serif",
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "Thank you for supporting.",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "serif",
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    _buildOrderDetails(),
+                    const SizedBox(height: 25),
+                    Row(
                       children: [
-                        const SizedBox(height: 25),
-                        const Icon(
-                          Icons.check_circle,
-                          size: 130,
-                          color: Color(0xFF79A985),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Order Placed!",
-                          style: TextStyle(
-                            fontSize: 27,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "serif",
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Thankyouforsupporting.",
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "serif",
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        _buildOrderDetails(),
-                        const SizedBox(height: 25),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 50,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.popUntil(
-                                      context,
-                                      (route) => route.isFirst,
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFA06D42),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  child: const Text("Home"),
+                        Expanded(
+                          child: SizedBox(
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.popUntil(
+                                  context,
+                                  (route) => route.isFirst,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFA06D42),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
+                              child: const Text("Home"),
                             ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              flex: 2,
-                              child: SizedBox(
-                                height: 50,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.popUntil(
-                                      context,
-                                      (route) => route.isFirst,
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFA06D42),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  child: const Text("ContinueShopping"),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          flex: 2,
+                          child: SizedBox(
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.popUntil(
+                                  context,
+                                  (route) => route.isFirst,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFA06D42),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
+                              child: const Text("Continue Shopping"),
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -114,23 +106,31 @@ class ConfirmOrderScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
+  Widget _buildTitle(BuildContext context) {
     return Container(
-      height: 85,
-      color: const Color(0xFFC3D9FF),
+      height: 64,
+      width: double.infinity,
+      color: const Color(0xFFFFF5F3),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.menu, size: 34),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),
-          Image.asset(
-            "lib/assets/images/devart-logo.png",
-            width: 70,
-            height: 70,
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Confirm Order",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB66D6D),
+                  fontFamily: "serif",
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 48),
         ],
@@ -138,33 +138,16 @@ class ConfirmOrderScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle() {
-    return Container(
-      height: 64,
-      color: const Color(0xFFFFF5F3),
-      child: const Center(
-        child: Text(
-          "ConfirmOrder",
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFB66D6D),
-            fontFamily: "serif",
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildOrderDetails() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(0.18),
             blurRadius: 5,
             offset: const Offset(0, 3),
           ),
@@ -173,13 +156,13 @@ class ConfirmOrderScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _detailRow("OrderStatus", "Processing", status: true),
+          _detailRow("Order Status", "Processing", status: true),
           const Divider(color: Colors.black),
-          _detailRow("OrderID", "#DVT-2026-7841"),
-          _detailRow("AmountPaid", "₹870.00", green: true),
-          _detailRow("DeliveryDate", "Estimated Nov14\nStandardShipping"),
+          _detailRow("Order ID", "#DVT-2026-7841"),
+          _detailRow("Amount Paid", "₹870.00", green: true),
+          _detailRow("Delivery Date", "Estimated Nov 14\nStandard Shipping"),
           _detailRow(
-            "ShippingAddress",
+            "Shipping Address",
             "Alex Rivers, 124 Artisans\nLane,\nStudio 4B, Brooklyn,\nNY 11201",
           ),
         ],
