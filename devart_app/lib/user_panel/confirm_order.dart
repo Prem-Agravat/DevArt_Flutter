@@ -1,4 +1,5 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/user_panel/dashboard.dart';
 import 'package:flutter/material.dart';
 
 class ConfirmOrderScreen extends StatelessWidget {
@@ -55,9 +56,11 @@ class ConfirmOrderScreen extends StatelessWidget {
                             height: 50,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.popUntil(
+                                Navigator.push(
                                   context,
-                                  (route) => route.isFirst,
+                                  MaterialPageRoute(
+                                    builder: (_) => const HomeScreen(),
+                                  ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -78,9 +81,11 @@ class ConfirmOrderScreen extends StatelessWidget {
                             height: 50,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.popUntil(
+                                Navigator.push(
                                   context,
-                                  (route) => route.isFirst,
+                                  MaterialPageRoute(
+                                    builder: (_) => const HomeScreen(),
+                                  ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -110,7 +115,7 @@ class ConfirmOrderScreen extends StatelessWidget {
     return Container(
       height: 64,
       width: double.infinity,
-      color: const Color(0xFFFFF5F3),
+      color: const Color(0xFFF5E9E5),
       child: Row(
         children: [
           IconButton(
@@ -126,7 +131,7 @@ class ConfirmOrderScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFB66D6D),
+                  color: Color(0xFFB56F6F),
                   fontFamily: "serif",
                 ),
               ),

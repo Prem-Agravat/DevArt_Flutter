@@ -126,18 +126,17 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildTitle() {
     return Container(
-      height: 64,
+      height: 59,
       width: double.infinity,
-      color: const Color(0xFFFFF5F3),
-      child: const Center(
-        child: Text(
-          "AddToCart",
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFB66D6D),
-            fontFamily: "serif",
-          ),
+      color: const Color(0xFFF5E9E5),
+      alignment: Alignment.center,
+      child: const Text(
+        "AddToCart",
+        style: TextStyle(
+          fontSize: 31,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFFB56F6F),
+          fontFamily: "serif",
         ),
       ),
     );

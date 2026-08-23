@@ -74,6 +74,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
           fontSize: 31,
           fontWeight: FontWeight.bold,
           color: Color(0xFFB56F6F),
+          fontFamily: "serif",
         ),
       ),
     );
