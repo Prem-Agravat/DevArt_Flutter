@@ -3,7 +3,7 @@ import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/admin/orders/order_management.dart';
 import 'package:devart/admin/inventory/inventory_management.dart';
 import 'package:devart/admin/offers/offer_management.dart';
-// import 'package:devart/admin/customers/customer_management.dart';
+import 'package:devart/admin/customers/customer_management.dart';
 
 class AdminShell extends StatelessWidget {
   final Widget child;
@@ -47,10 +47,10 @@ class AdminShell extends StatelessWidget {
   }
 
   void _openCustomers(BuildContext context) {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (_) => const CustomerManagementScreen()),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CustomerManagementScreen()),
+    );
   }
 
   @override
