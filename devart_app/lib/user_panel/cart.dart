@@ -1,6 +1,7 @@
 import 'package:devart/admin/offers/offer_management.dart';
 import 'package:devart/common/app_shell.dart';
 import 'package:devart/user_panel/coupons.dart';
+import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/delivery_address.dart';
 import 'package:flutter/material.dart';
 
@@ -103,7 +104,10 @@ class _CartScreenState extends State<CartScreen> {
                     const SizedBox(height: 5),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        );
                       },
                       child: const Text(
                         "Continue Shopping",
