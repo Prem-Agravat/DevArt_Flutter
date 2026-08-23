@@ -1,3 +1,4 @@
+import 'package:devart/user_panel/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/common/app_shell.dart';
 
@@ -343,7 +344,12 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
       child: SizedBox(
         height: 50,
         child: ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CartScreen()),
+            );
+          },
           icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
           label: const Text(
             "Add To Cart",

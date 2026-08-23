@@ -104,7 +104,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
           "rating": "4.5",
           "price": "₹599",
           "oldPrice": "₹799",
-          "images": "lib/assets/images/devart_product_1.webp",
+          "image": "lib/assets/images/devart_product_1.webp",
         },
         {
           "name": "Designer Toran",

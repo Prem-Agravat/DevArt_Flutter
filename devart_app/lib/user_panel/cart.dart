@@ -1,4 +1,6 @@
+import 'package:devart/admin/offers/offer_management.dart';
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/user_panel/coupons.dart';
 import 'package:devart/user_panel/delivery_address.dart';
 import 'package:flutter/material.dart';
 
@@ -307,7 +309,12 @@ class _CartScreenState extends State<CartScreen> {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CouponsScreen()),
+              );
+            },
             child: const Text(
               "View Available Offers",
               style: TextStyle(

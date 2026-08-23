@@ -84,7 +84,7 @@ class OrdersScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "ActiveOrders",
+                "Active Orders",
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -102,8 +102,8 @@ class OrdersScreen extends StatelessWidget {
             ],
           ),
         ),
+
         Container(
-          height: 122,
           width: double.infinity,
           padding: const EdgeInsets.all(11),
           decoration: BoxDecoration(
@@ -116,6 +116,7 @@ class OrdersScreen extends StatelessWidget {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(9),
@@ -126,23 +127,28 @@ class OrdersScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
+
               const SizedBox(width: 28),
+
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "IndigoGeometry",
+                      "Indigo Geometry",
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         fontFamily: "serif",
                       ),
                     ),
+
                     const SizedBox(height: 8),
+
                     const Text(
-                      "ArrivalExpected\nWednesday,Nov14",
+                      "Arrival Expected\nWednesday, Nov 14",
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -152,6 +158,9 @@ class OrdersScreen extends StatelessWidget {
                   ],
                 ),
               ),
+
+              const SizedBox(width: 8),
+
               _statusBadge("PROCESSING"),
             ],
           ),

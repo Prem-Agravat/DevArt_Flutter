@@ -1,6 +1,7 @@
 import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/common/action_popup.dart';
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/user_panel/orders.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/edit_profile.dart';
 import 'package:devart/user_panel/change_password.dart';
@@ -56,16 +57,38 @@ class ProfileScreen extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _statCard(
-                            Icons.favorite_border,
-                            "12 Favorites",
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const WishlistScreen(),
+                                ),
+                              );
+                            },
+                            child: _statCard(
+                              Icons.favorite_border,
+                              "12 Favorites",
+                            ),
                           ),
                         ),
+
                         const SizedBox(width: 12),
+
                         Expanded(
-                          child: _statCard(
-                            Icons.shopping_bag_outlined,
-                            "orders",
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const OrdersScreen(),
+                                ),
+                              );
+                            },
+                            child: _statCard(
+                              Icons.shopping_bag_outlined,
+                              "Orders",
+                            ),
                           ),
                         ),
                       ],
