@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:devart/admin/dashboard/admin_dashboard.dart';
-import 'package:devart/admin/inventory/inventory_management.dart';
 import 'package:devart/admin/orders/order_management.dart';
+import 'package:devart/admin/inventory/inventory_management.dart';
 import 'package:devart/admin/offers/offer_management.dart';
 import 'package:devart/admin/customers/customer_management.dart';
 
 class AdminShell extends StatelessWidget {
   final Widget child;
   final int selectedIndex;
-  final String? selectedDrawerItem;
-  final bool showBackButton;
-  final String title;
 
   const AdminShell({
     super.key,
     required this.child,
     required this.selectedIndex,
-    this.selectedDrawerItem,
-    this.showBackButton = false,
-    this.title = "Admin Panel",
   });
 
   void _navigate(BuildContext context, int index) {
@@ -32,20 +26,31 @@ class AdminShell extends StatelessWidget {
       case 0:
         page = const AdminDashboard();
         break;
-      case 1:
-        page = const InventoryManagementScreen();
-        break;
-      case 2:
-        page = const OrderManagementScreen();
-        break;
-      case 3:
-        page = const OfferManagementScreen();
-        break;
+
+      // case 1:
+      //   page = const InventoryManagementScreen();
+      //   break;
+
+      // case 2:
+      //   page = const OrderManagementScreen();
+      //   break;
+
+      // case 3:
+      //   page = const OfferManagementScreen();
+      //   break;
+
       default:
         return;
     }
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  void _openCustomers(BuildContext context) {
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (_) => const CustomerManagementScreen()),
+    // );
   }
 
   @override
@@ -57,37 +62,28 @@ class AdminShell extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
+        toolbarHeight: 80,
         title: Row(
           children: [
             const SizedBox(width: 18),
-
             Image.asset(
               "lib/assets/images/devart-logo.png",
               width: 58,
               height: 58,
             ),
-
-            const SizedBox(width: 30),
-
+            const SizedBox(width: 25),
             const Text(
               "Admin Panel",
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-
             const Spacer(),
-
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CustomerManagementScreen(),
-                  ),
-                );
+                _openCustomers(context);
               },
               child: const Padding(
                 padding: EdgeInsets.only(right: 18),
@@ -99,11 +95,13 @@ class AdminShell extends StatelessWidget {
                       size: 30,
                       color: Colors.black,
                     ),
+                    SizedBox(height: 2),
                     Text(
                       "Customers",
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -122,40 +120,9 @@ class AdminShell extends StatelessWidget {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.18)),
+            child: Container(color: Colors.white.withOpacity(0.15)),
           ),
-          Column(
-            children: [
-              if (showBackButton)
-                Container(
-                  height: 74,
-                  color: const Color(0xFFFFF7F5),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                        },
-                        icon: const Icon(Icons.arrow_back_ios_new, size: 27),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 27,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
-                ),
-              Expanded(child: child),
-            ],
-          ),
+          SafeArea(child: child),
         ],
       ),
       bottomNavigationBar: Container(
@@ -172,7 +139,9 @@ class AdminShell extends StatelessWidget {
         ),
         child: BottomNavigationBar(
           currentIndex: selectedIndex,
-          onTap: (index) => _navigate(context, index),
+          onTap: (index) {
+            _navigate(context, index);
+          },
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -180,11 +149,11 @@ class AdminShell extends StatelessWidget {
           unselectedItemColor: Colors.black,
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 13,
           ),
           unselectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 13,
           ),
           items: const [
             BottomNavigationBarItem(
@@ -198,13 +167,13 @@ class AdminShell extends StatelessWidget {
               label: "Inventory",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_outlined, size: 30),
-              activeIcon: Icon(Icons.shopping_cart, size: 30),
+              icon: Icon(Icons.shopping_cart_outlined, size: 28),
+              activeIcon: Icon(Icons.shopping_cart, size: 28),
               label: "Orders",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.discount_outlined, size: 30),
-              activeIcon: Icon(Icons.discount, size: 30),
+              icon: Icon(Icons.discount_outlined, size: 28),
+              activeIcon: Icon(Icons.discount, size: 28),
               label: "Offers",
             ),
           ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
-import 'package:devart/admin/orders/order_management.dart';
+// import 'package:devart/admin/orders/order_management.dart';
 import 'package:devart/user_panel/dashboard.dart';
 
 class AdminDashboard extends StatelessWidget {
@@ -10,8 +10,6 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdminShell(
       selectedIndex: 0,
-      selectedDrawerItem: "Dashboard",
-      title: "Admin Panel",
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(15, 20, 15, 30),
         child: Column(
@@ -33,23 +31,23 @@ class AdminDashboard extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
             const Text(
               "Welcome back, Dev.",
               style: TextStyle(
-                fontSize: 17,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.brown,
+                color: Color(0xFF65452F),
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             Row(
               children: [
                 Expanded(
-                  child: _statCard(
+                  child: _buildStatCard(
                     icon: Icons.payments_outlined,
                     title: "Total Sales",
                     value: "₹9875.00",
@@ -57,7 +55,7 @@ class AdminDashboard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _statCard(
+                  child: _buildStatCard(
                     icon: Icons.shopping_bag_outlined,
                     title: "Total Orders",
                     value: "650",
@@ -71,15 +69,15 @@ class AdminDashboard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _statCard(
-                    icon: Icons.person_outline,
+                  child: _buildStatCard(
+                    icon: Icons.people_outline,
                     title: "Customers",
                     value: "896",
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _statCard(
+                  child: _buildStatCard(
                     icon: Icons.inventory_2_outlined,
                     title: "Active Orders",
                     value: "34",
@@ -88,18 +86,19 @@ class AdminDashboard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
 
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: const Color(0xFFD8D8D8),
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.black, width: 1),
+                border: Border.all(color: Colors.black, width: 1.2),
               ),
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 10, 12),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 10, 10),
                     child: Row(
                       children: [
                         const Expanded(
@@ -113,18 +112,18 @@ class AdminDashboard extends StatelessWidget {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const OrderManagementScreen(),
-                              ),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (_) => const OrderManagementScreen(),
+                            //   ),
+                            // );
                           },
                           child: const Text(
                             "View All",
                             style: TextStyle(
                               color: Color(0xFF7A4A2A),
-                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -135,23 +134,17 @@ class AdminDashboard extends StatelessWidget {
 
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
+                      horizontal: 12,
                       vertical: 12,
                     ),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        top: BorderSide(color: Colors.black54),
-                        bottom: BorderSide(color: Colors.black54),
-                      ),
-                    ),
+                    color: Colors.white,
                     child: const Row(
                       children: [
                         Expanded(
                           child: Text(
                             "ORDER ID",
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -160,7 +153,7 @@ class AdminDashboard extends StatelessWidget {
                           child: Text(
                             "PRODUCT",
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -169,7 +162,7 @@ class AdminDashboard extends StatelessWidget {
                           child: Text(
                             "CUSTOMER",
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -178,10 +171,13 @@ class AdminDashboard extends StatelessWidget {
                     ),
                   ),
 
-                  _orderRow("#ORD-2094", "IndigoGeometry", "Matt Donovan"),
-                  _orderRow("#ORD-2094", "IndigoGeometry", "Matt Donovan"),
-                  _orderRow("#ORD-2094", "IndigoGeometry", "Matt Donovan"),
-                  _orderRow("#ORD-2094", "IndigoGeometry", "Matt Donovan"),
+                  _buildOrderRow("#ORD-2094", "IndigoGeometry", "Matt Donovan"),
+
+                  _buildOrderRow("#ORD-2095", "Cushion Cover", "Arjun Sharma"),
+
+                  _buildOrderRow("#ORD-2096", "Handmade Toran", "Priya Devi"),
+
+                  _buildOrderRow("#ORD-2097", "Ceramic Vase", "Rohan Patel"),
                 ],
               ),
             ),
@@ -193,7 +189,7 @@ class AdminDashboard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.brown,
+                color: Color(0xFF65452F),
               ),
             ),
 
@@ -217,6 +213,7 @@ class AdminDashboard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFA06D42),
                   foregroundColor: Colors.white,
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -229,22 +226,25 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  static Widget _statCard({
+  static Widget _buildStatCard({
     required IconData icon,
     required String title,
     required String value,
   }) {
     return Container(
-      height: 100,
-      padding: const EdgeInsets.all(14),
+      height: 105,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFD8D8D8),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black, width: 1.5),
+        border: Border.all(color: Colors.black, width: 1.2),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 3, offset: Offset(0, 2)),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, size: 28, color: Colors.black),
+          Icon(icon, size: 29, color: Colors.black),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -253,12 +253,16 @@ class AdminDashboard extends StatelessWidget {
               children: [
                 Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
+                Container(height: 1, color: Colors.black54),
+                const SizedBox(height: 7),
                 Text(
                   value,
                   style: const TextStyle(
@@ -274,33 +278,22 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  static Widget _orderRow(String orderId, String product, String customer) {
+  static Widget _buildOrderRow(
+    String orderId,
+    String product,
+    String customer,
+  ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 17),
       decoration: const BoxDecoration(
         color: Color(0xFFD8D8D8),
-        border: Border(bottom: BorderSide(color: Colors.black)),
+        border: Border(top: BorderSide(color: Colors.black54)),
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              orderId,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              product,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              customer,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            ),
-          ),
+          Expanded(child: Text(orderId, style: const TextStyle(fontSize: 11))),
+          Expanded(child: Text(product, style: const TextStyle(fontSize: 11))),
+          Expanded(child: Text(customer, style: const TextStyle(fontSize: 11))),
         ],
       ),
     );
