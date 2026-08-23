@@ -41,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     const Text(
-                      "Guest User",
+                      "Prem Agravat",
                       style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -49,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      "premium@devart.com",
+                      "premagravat00@gmail.com",
                       style: TextStyle(color: Color(0xFF5F5550)),
                     ),
                     const SizedBox(height: 22),
