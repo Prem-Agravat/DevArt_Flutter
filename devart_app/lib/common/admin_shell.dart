@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/admin/orders/order_management.dart';
 import 'package:devart/admin/inventory/inventory_management.dart';
-// import 'package:devart/admin/offers/offer_management.dart';
+import 'package:devart/admin/offers/offer_management.dart';
 // import 'package:devart/admin/customers/customer_management.dart';
 
 class AdminShell extends StatelessWidget {
@@ -35,9 +35,9 @@ class AdminShell extends StatelessWidget {
         page = const OrderManagementScreen();
         break;
 
-      // case 3:
-      //   page = const OfferManagementScreen();
-      //   break;
+      case 3:
+        page = const OfferManagementScreen();
+        break;
 
       default:
         return;
