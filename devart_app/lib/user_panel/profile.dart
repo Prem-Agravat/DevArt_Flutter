@@ -1,3 +1,4 @@
+import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/common/action_popup.dart';
 import 'package:devart/common/app_shell.dart';
 import 'package:flutter/material.dart';
@@ -140,6 +141,19 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const WishlistScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _profileItem(
+                      icon: Icons.admin_panel_settings_outlined,
+                      title: "Admin Panel",
+                      color: const Color(0xFFFFDADA),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminDashboard(),
                           ),
                         );
                       },
