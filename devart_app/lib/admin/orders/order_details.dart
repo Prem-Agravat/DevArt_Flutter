@@ -141,15 +141,33 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       height: 59,
       width: double.infinity,
       color: const Color(0xFFF5E9E5),
-      alignment: Alignment.center,
-      child: const Text(
-        "Order Details",
-        style: TextStyle(
-          fontSize: 31,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFFB56F6F),
-          fontFamily: "serif",
-        ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 25,
+              color: Colors.black,
+            ),
+          ),
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Order Details",
+                style: TextStyle(
+                  fontSize: 31,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB56F6F),
+                  fontFamily: "serif",
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 48),
+        ],
       ),
     );
   }
