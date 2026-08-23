@@ -1,7 +1,11 @@
+import 'package:devart/user_panel/help_support.dart';
+import 'package:devart/user_panel/login.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/categories.dart';
 import 'package:devart/user_panel/orders.dart';
+import 'package:devart/user_panel/profile.dart';
+import 'package:devart/user_panel/wishlist.dart';
 
 class AppDrawer extends StatelessWidget {
   final String selectedItem;
@@ -9,12 +13,11 @@ class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key, required this.selectedItem});
 
   void _navigate(BuildContext context, String item, Widget page) {
+    Navigator.pop(context);
+
     if (item == selectedItem) {
-      Navigator.pop(context);
       return;
     }
-
-    Navigator.pop(context);
 
     Future.delayed(const Duration(milliseconds: 200), () {
       Navigator.pushReplacement(
@@ -49,7 +52,7 @@ class AppDrawer extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              _buildProfile(),
+              _buildProfile(context),
 
               const SizedBox(height: 25),
 
@@ -78,7 +81,9 @@ class AppDrawer extends StatelessWidget {
                 icon: Icons.favorite_border,
                 title: "Wishlist",
                 selected: selectedItem == "Wishlist",
-                onTap: () {},
+                onTap: () {
+                  _navigate(context, "Wishlist", const WishlistScreen());
+                },
               ),
 
               _buildMenuItem(
@@ -101,7 +106,9 @@ class AppDrawer extends StatelessWidget {
                 icon: Icons.person_outline,
                 title: "My Profile",
                 selected: selectedItem == "My Profile",
-                onTap: () {},
+                onTap: () {
+                  _navigate(context, "My Profile", const ProfileScreen());
+                },
               ),
 
               _buildMenuItem(
@@ -122,10 +129,16 @@ class AppDrawer extends StatelessWidget {
 
               _buildMenuItem(
                 context,
-                icon: Icons.person_outline,
-                title: "Help&Support",
-                selected: selectedItem == "Help&Support",
-                onTap: () {},
+                icon: Icons.help_outline,
+                title: "Help & Support",
+                selected: selectedItem == "Help & Support",
+                onTap: () {
+                  _navigate(
+                    context,
+                    "Help & Support",
+                    const HelpSupportScreen(),
+                  );
+                },
               ),
 
               const Spacer(),
@@ -140,38 +153,43 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildProfile() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(36, 30, 20, 0),
+  Widget _buildProfile(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(36, 30, 20, 0),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Guest User",
+            const Text(
+              "Prem Agravat",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF805B3E),
               ),
             ),
-            SizedBox(height: 3),
-            Text(
+            const SizedBox(height: 3),
+            const Text(
               "Welcome back",
               style: TextStyle(fontSize: 15, color: Colors.black54),
             ),
-            SizedBox(height: 16),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: Color(0xFFE2E2E2),
-                borderRadius: BorderRadius.all(Radius.circular(25)),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Text(
-                  "Edit Profile",
-                  style: TextStyle(fontSize: 13, color: Colors.black87),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () {
+                _navigate(context, "My Profile", const ProfileScreen());
+              },
+              child: const DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Color(0xFFE2E2E2),
+                  borderRadius: BorderRadius.all(Radius.circular(25)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Text(
+                    "Edit Profile",
+                    style: TextStyle(fontSize: 13, color: Colors.black87),
+                  ),
                 ),
               ),
             ),
@@ -223,7 +241,45 @@ class AppDrawer extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
         onTap: () {
-          Navigator.pop(context);
+          showDialog(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Text(
+                  "Logout",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                content: const Text("Are you sure you want to logout?"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                    },
+                    child: const Text("Cancel"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text("Logout"),
+                  ),
+                ],
+              );
+            },
+          );
         },
         child: Container(
           height: 43,
