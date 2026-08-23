@@ -79,6 +79,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   Widget build(BuildContext context) {
     return AdminShell(
       selectedIndex: 0,
+      isCustomerPage: true,
       child: Column(
         children: [
           _buildTitle(),

@@ -107,7 +107,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminShell(
-      selectedIndex: 0,
+      selectedIndex: 3,
       child: Column(
         children: [
           _buildTitle(),
