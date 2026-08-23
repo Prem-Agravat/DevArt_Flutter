@@ -27,9 +27,9 @@ class AdminShell extends StatelessWidget {
         page = const AdminDashboard();
         break;
 
-      // case 1:
-      //   page = const InventoryManagementScreen();
-      //   break;
+      case 1:
+        page = const InventoryManagementScreen();
+        break;
 
       // case 2:
       //   page = const OrderManagementScreen();
