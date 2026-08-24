@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "25561610093",
+    "project_id": "devart-c42a5",
+    "storage_bucket": "devart-c42a5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:25561610093:android:c3b957fe121263526a4c64",
+        "android_client_info": {
+          "package_name": "com.example.devart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkfuyn48xjBW_oWbbsr2Dc6iaRXf3cnWo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
