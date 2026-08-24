@@ -129,7 +129,7 @@ class AdminShell extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.asset(
-              "lib/assets/images/devart_bgimg_home.png",
+              "lib/assets/images/devart_bgimg_admin.png",
               fit: BoxFit.cover,
             ),
           ),
