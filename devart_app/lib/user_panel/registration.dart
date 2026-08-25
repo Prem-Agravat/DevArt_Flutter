@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:devart/user_panel/login.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -31,7 +32,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     super.dispose();
   }
 
-  void _register() {
+  Future<void> _register() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -43,10 +44,88 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+
+      // Create Firebase account
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Account created successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Go to Login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      String message;
+
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = "An account already exists with this email.";
+          break;
+
+        case 'invalid-email':
+          message = "Please enter a valid email address.";
+          break;
+
+        case 'weak-password':
+          message = "Password is too weak. Use at least 6 characters.";
+          break;
+
+        case 'operation-not-allowed':
+          message = "Email/Password authentication is not enabled.";
+          break;
+
+        default:
+          message = e.message ?? "Registration failed. Please try again.";
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Something went wrong. Please try again."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   InputDecoration inputDecoration({
