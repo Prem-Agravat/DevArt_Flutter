@@ -1,8 +1,8 @@
-import 'package:devart/user_panel/registration.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:devart/user_panel/registration.dart';
 import 'package:devart/user_panel/verify_otp.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:devart/services/auth_service.dart';
+import 'package:http/http.dart' as http;
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -21,15 +21,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _sendOtp() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    _showSuccessDialog();
-  }
-
-  void _showSuccessDialog() {
+  void _showSuccessDialog(String email) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -92,7 +84,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const VerifyOtpScreen(),
+                          builder: (context) => VerifyOtpScreen(email: email),
                         ),
                       );
                     },
@@ -118,30 +110,53 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _forgotPassword() async {
-    if (_emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email address.")),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    final email = _emailController.text.trim().toLowerCase();
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
     try {
-      await AuthService().resetPassword(_emailController.text.trim());
+      final response = await http.post(
+        Uri.parse("https://devart-otp.agravatprem00.workers.dev/send-otp"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email}),
+      );
 
       if (!mounted) return;
+
+      // Close loading
+      Navigator.pop(context);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data["success"] == true) {
+        _showSuccessDialog(email);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? "Unable to send OTP."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Password reset email sent. Check your inbox."),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? "Unable to send reset email."),
+          content: Text("Unable to connect to server. Please try again."),
           backgroundColor: Colors.red,
         ),
       );

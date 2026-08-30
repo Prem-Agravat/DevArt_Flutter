@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/login.dart';
 import 'package:devart/common/app_shell.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ChangePasswordScreen extends StatefulWidget {
   final bool fromProfile;
 
-  const ChangePasswordScreen({super.key, this.fromProfile = false});
+  // Used only for forgot-password OTP flow
+  final String? email;
+  final String? resetToken;
+
+  const ChangePasswordScreen({
+    super.key,
+    this.fromProfile = false,
+    this.email,
+    this.resetToken,
+  });
 
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -32,12 +43,88 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     super.dispose();
   }
 
-  void _updatePassword() {
+  Future<void> _updatePassword() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    // Forgot password / OTP flow
+    if (!widget.fromProfile) {
+      await _resetPasswordWithOtp();
+      return;
+    }
+
+    // Profile password change
+    // Keep your existing profile-password logic here.
     _showSuccessDialog();
+  }
+
+  Future<void> _resetPasswordWithOtp() async {
+    if (widget.email == null || widget.resetToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Invalid password reset session. Please request a new OTP.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final newPassword = _passwordController.text.trim();
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+          "https://devart-otp.agravatprem00.workers.dev/reset-password",
+        ),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": widget.email,
+          "resetToken": widget.resetToken,
+          "newPassword": newPassword,
+        }),
+      );
+
+      if (!mounted) return;
+
+      // Close loading
+      Navigator.pop(context);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data["success"] == true) {
+        _showSuccessDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? "Unable to reset password."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Unable to connect to server. Please try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showSuccessDialog() {
