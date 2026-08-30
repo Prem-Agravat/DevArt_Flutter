@@ -12,7 +12,12 @@
           "package_name": "com.example.devart"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "25561610093-jik9j7m3rcf4pacmk65ef9qpftrf68ei.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDkfuyn48xjBW_oWbbsr2Dc6iaRXf3cnWo"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "25561610093-jik9j7m3rcf4pacmk65ef9qpftrf68ei.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "25561610093-bnak0qedphp6bhk1rghcnd47h8qfh95j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.devart"
+              }
+            }
+          ]
         }
       }
     }
