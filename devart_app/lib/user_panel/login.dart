@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Show loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -42,13 +43,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     try {
+      // Firebase Login
       await AuthService().loginUser(
-        email: _emailController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
       if (!mounted) return;
 
+      // Close loading
       Navigator.pop(context);
 
       // Login successful
@@ -59,14 +62,18 @@ class _LoginScreenState extends State<LoginScreen> {
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
+      // Close loading
       Navigator.pop(context);
 
       String message;
 
       switch (e.code) {
-        case 'user-not-found':
         case 'invalid-credential':
           message = "Invalid email or password.";
+          break;
+
+        case 'user-not-found':
+          message = "No account found with this email.";
           break;
 
         case 'wrong-password':
@@ -95,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Something went wrong."),
+          content: Text("Something went wrong. Please try again."),
           backgroundColor: Colors.red,
         ),
       );
