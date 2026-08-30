@@ -6,11 +6,25 @@ import 'package:devart/user_panel/categories.dart';
 import 'package:devart/user_panel/orders.dart';
 import 'package:devart/user_panel/profile.dart';
 import 'package:devart/user_panel/wishlist.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:devart/services/auth_service.dart';
 
 class AppDrawer extends StatelessWidget {
   final String selectedItem;
 
   const AppDrawer({super.key, required this.selectedItem});
+
+  Future<void> _logout(BuildContext context) async {
+    await AuthService().logout();
+
+    if (!context.mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
 
   void _navigate(BuildContext context, String item, Widget page) {
     Navigator.pop(context);
@@ -262,13 +276,7 @@ class AppDrawer extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(dialogContext);
-
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (route) => false,
-                      );
+                      _logout(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,

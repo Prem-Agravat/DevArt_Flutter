@@ -2,6 +2,8 @@ import 'package:devart/user_panel/forgot_pass.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/registration.dart';
 import 'package:devart/user_panel/dashboard.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:devart/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,15 +28,78 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const Center(child: CircularProgressIndicator());
+      },
     );
+
+    try {
+      await AuthService().loginUser(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      // Login successful
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      String message;
+
+      switch (e.code) {
+        case 'user-not-found':
+        case 'invalid-credential':
+          message = "Invalid email or password.";
+          break;
+
+        case 'wrong-password':
+          message = "Incorrect password.";
+          break;
+
+        case 'invalid-email':
+          message = "Please enter a valid email address.";
+          break;
+
+        case 'user-disabled':
+          message = "This account has been disabled.";
+          break;
+
+        default:
+          message = e.message ?? "Login failed.";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   InputDecoration inputDecoration({

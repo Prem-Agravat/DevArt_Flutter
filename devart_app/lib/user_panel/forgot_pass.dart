@@ -1,6 +1,8 @@
 import 'package:devart/user_panel/registration.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/verify_otp.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:devart/services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -115,6 +117,37 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
+  Future<void> _forgotPassword() async {
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email address.")),
+      );
+      return;
+    }
+
+    try {
+      await AuthService().resetPassword(_emailController.text.trim());
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Password reset email sent. Check your inbox."),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? "Unable to send reset email."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   InputDecoration inputDecoration() {
     return InputDecoration(
       hintText: "Email",
@@ -215,7 +248,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         width: 230,
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: _sendOtp,
+                          onPressed: _forgotPassword,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFA06D42),
                             foregroundColor: Colors.white,

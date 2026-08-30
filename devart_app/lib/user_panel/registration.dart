@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:devart/user_panel/login.dart';
+import 'package:devart/services/auth_service.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -41,56 +42,54 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please agree to the Terms & Conditions")),
       );
+
       return;
     }
 
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
     try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) {
-          return const Center(child: CircularProgressIndicator());
-        },
+      await AuthService().registerUser(
+        name: _nameController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        password: _passwordController.text,
       );
 
-      // Create Firebase account
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      if (!mounted) return;
+
+      // Close loading
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Account created successfully!"),
+          backgroundColor: Colors.green,
+        ),
       );
 
-      // Close loading dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Account created successfully!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Go to Login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
+      // Go to Login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     } on FirebaseAuthException catch (e) {
-      // Close loading dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      if (!mounted) return;
+
+      Navigator.pop(context);
 
       String message;
 
       switch (e.code) {
         case 'email-already-in-use':
-          message = "An account already exists with this email.";
+          message = "This email is already registered.";
           break;
 
         case 'invalid-email':
@@ -98,33 +97,31 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           break;
 
         case 'weak-password':
-          message = "Password is too weak. Use at least 6 characters.";
+          message = "Password must be at least 6 characters.";
           break;
 
         case 'operation-not-allowed':
-          message = "Email/Password authentication is not enabled.";
+          message = "Email/Password authentication is disabled.";
           break;
 
         default:
-          message = e.message ?? "Registration failed. Please try again.";
+          message = e.message ?? "Registration failed.";
       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: Colors.red),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
     } catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
+      if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Something went wrong. Please try again."),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Something went wrong: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
