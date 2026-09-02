@@ -1,3 +1,4 @@
+import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/user_panel/forgot_pass.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/registration.dart';
@@ -43,8 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     try {
-      // Firebase Login
-      await AuthService().loginUser(
+      final authService = AuthService();
+      await authService.loginUser(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -54,11 +55,24 @@ class _LoginScreenState extends State<LoginScreen> {
       // Close loading
       Navigator.pop(context);
 
-      // Login successful
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      // Verify if the user has role 'admin' in Firestore
+      final bool isAdmin = await authService.isCurrentUserAdmin();
+
+      if (!mounted) return;
+
+      if (isAdmin) {
+        // Direct admin users to Admin Dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminDashboard()),
+        );
+      } else {
+        // Direct regular users to HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 

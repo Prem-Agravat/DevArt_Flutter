@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
-// import 'package:devart/admin/orders/order_management.dart';
+import 'package:devart/services/auth_service.dart';
 import 'package:devart/user_panel/dashboard.dart';
 
 class AdminDashboard extends StatelessWidget {
@@ -8,6 +8,12 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = AuthService().currentUser;
+    final adminEmail = user?.email ?? "admin@devart.com";
+    final adminName = user?.displayName ??
+        (adminEmail.isNotEmpty ? adminEmail.split('@')[0] : "Admin");
+    final firstName = adminName.split(" ").first;
+
     return AdminShell(
       selectedIndex: 0,
       child: SingleChildScrollView(
@@ -15,17 +21,20 @@ class AdminDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
+            Center(
               child: Column(
                 children: [
                   Text(
-                    "Dev Chauhan",
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    adminName,
+                    style: const TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  SizedBox(height: 3),
+                  const SizedBox(height: 3),
                   Text(
-                    "premium@devart.com",
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                    adminEmail,
+                    style: const TextStyle(fontSize: 14, color: Colors.black54),
                   ),
                 ],
               ),
@@ -33,9 +42,9 @@ class AdminDashboard extends StatelessWidget {
 
             const SizedBox(height: 18),
 
-            const Text(
-              "Welcome back, Dev.",
-              style: TextStyle(
+            Text(
+              "Welcome back, $firstName.",
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF65452F),

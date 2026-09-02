@@ -1,6 +1,8 @@
 import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/common/action_popup.dart';
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/services/auth_service.dart';
+import 'package:devart/user_panel/login.dart';
 import 'package:devart/user_panel/orders.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/edit_profile.dart';
@@ -9,17 +11,69 @@ import 'package:devart/user_panel/help_support.dart';
 import 'package:devart/user_panel/wishlist.dart';
 import 'package:devart/user_panel/coupons.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  void _logout(BuildContext context) {
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
+  bool _isAdmin = false;
+  String _userName = "User";
+  String _userEmail = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = _authService.currentUser;
+    if (user != null) {
+      _userEmail = user.email ?? "";
+      _userName = user.displayName ?? (_userEmail.isNotEmpty ? _userEmail.split('@')[0] : "User");
+
+      // Check Firestore role
+      try {
+        final doc = await _authService.getUserProfile();
+        if (doc.exists) {
+          final data = doc.data();
+          if (data != null) {
+            if (data['name'] != null && data['name'].toString().isNotEmpty) {
+              _userName = data['name'].toString();
+            }
+            final role = data['role']?.toString().toLowerCase().trim();
+            _isAdmin = (role == "admin");
+          }
+        }
+      } catch (_) {
+        // Fallback to authService check
+        _isAdmin = await _authService.isCurrentUserAdmin();
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await _authService.logout();
+    if (!context.mounted) return;
     showSuccessPopup(
       context,
       title: "Logout",
       message: "You have been logged out successfully.",
       buttonText: "Continue",
       onPressed: () {
-        Navigator.popUntil(context, (route) => route.isFirst);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
       },
     );
   }
@@ -41,18 +95,38 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(26, 20, 26, 25),
                 child: Column(
                   children: [
-                    const Text(
-                      "Prem Agravat",
-                      style: TextStyle(
+                    Text(
+                      _userName,
+                      style: const TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      "premagravat00@gmail.com",
-                      style: TextStyle(color: Color(0xFF5F5550)),
+                    Text(
+                      _userEmail.isNotEmpty ? _userEmail : "user@devart.com",
+                      style: const TextStyle(color: Color(0xFF5F5550)),
                     ),
+                    if (_isAdmin) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFBFD5FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF7090C8)),
+                        ),
+                        child: const Text(
+                          "ADMINISTRATOR",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E3A8A),
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 22),
                     Row(
                       children: [
@@ -168,19 +242,21 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    _profileItem(
-                      icon: Icons.admin_panel_settings_outlined,
-                      title: "Admin Panel",
-                      color: const Color(0xFFFFDADA),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AdminDashboard(),
-                          ),
-                        );
-                      },
-                    ),
+                    // Show Admin Panel ONLY if user is verified as admin in Firestore
+                    if (_isAdmin)
+                      _profileItem(
+                        icon: Icons.admin_panel_settings_outlined,
+                        title: "Admin Panel",
+                        color: const Color(0xFFBFD5FA),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AdminDashboard(),
+                            ),
+                          );
+                        },
+                      ),
                     _profileItem(
                       icon: Icons.help_outline,
                       title: "Help & Support",

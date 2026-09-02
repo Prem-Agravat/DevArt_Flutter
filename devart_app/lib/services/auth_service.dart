@@ -14,6 +14,7 @@ class AuthService {
     required String email,
     required String phone,
     required String password,
+    String role = "user",
   }) async {
     // 1. Create account in Firebase Authentication
     final UserCredential credential = await _auth
@@ -22,22 +23,21 @@ class AuthService {
           password: password,
         );
 
-    // Get the newly created Firebase user
     final User? user = credential.user;
 
     if (user == null) {
       throw Exception("User creation failed.");
     }
 
-    // 2. Store user's name in Firebase Authentication
+    // 2. Store user's name in Firebase Authentication profile
     await user.updateDisplayName(name.trim());
 
-    // 3. Store user's additional information in Firestore
+    // 3. Store user's profile and role in Firestore
     await _firestore.collection("users").doc(user.uid).set({
       "name": name.trim(),
       "email": email.trim(),
       "phone": phone.trim(),
-      "role": "user",
+      "role": role,
       "createdAt": FieldValue.serverTimestamp(),
     });
 
@@ -69,19 +69,69 @@ class AuthService {
   }
 
   // ============================================================
-  // GET CURRENT USER
+  // GET CURRENT USER & UID
   // ============================================================
 
   User? get currentUser {
     return _auth.currentUser;
   }
 
-  // ============================================================
-  // GET CURRENT USER UID
-  // ============================================================
-
   String? get currentUserId {
     return _auth.currentUser?.uid;
+  }
+
+  // ============================================================
+  // ROLE & ADMIN CHECKS (Pure Firestore Database)
+  // ============================================================
+
+  /// Returns true if the currently logged-in user has role == 'admin' in Firestore
+  Future<bool> isCurrentUserAdmin() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      final doc = await _firestore.collection("users").doc(user.uid).get();
+      if (doc.exists) {
+        final data = doc.data();
+        final role = data?['role']?.toString().toLowerCase().trim();
+        return role == "admin";
+      }
+    } catch (e) {
+      // In case of network/permission issues
+    }
+
+    return false;
+  }
+
+  /// Gets the role of the currently logged-in user ('admin', 'user', etc.)
+  Future<String> getCurrentUserRole() async {
+    final user = _auth.currentUser;
+    if (user == null) return "guest";
+
+    try {
+      final doc = await _firestore.collection("users").doc(user.uid).get();
+      if (doc.exists) {
+        return doc.data()?['role']?.toString() ?? "user";
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    return "user";
+  }
+
+  /// Promotes a user to admin in Firestore
+  Future<void> promoteUserToAdmin(String uid) async {
+    await _firestore.collection("users").doc(uid).update({
+      "role": "admin",
+    });
+  }
+
+  /// Demotes an admin back to regular user in Firestore
+  Future<void> demoteAdminToUser(String uid) async {
+    await _firestore.collection("users").doc(uid).update({
+      "role": "user",
+    });
   }
 
   // ============================================================
