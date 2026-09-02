@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
+import 'package:devart/models/product_model.dart';
+import 'package:devart/services/product_service.dart';
 
 class EditProductScreen extends StatefulWidget {
-  const EditProductScreen({super.key});
+  final ProductModel product;
+
+  const EditProductScreen({super.key, required this.product});
 
   @override
   State<EditProductScreen> createState() => _EditProductScreenState();
@@ -10,52 +14,127 @@ class EditProductScreen extends StatefulWidget {
 
 class _EditProductScreenState extends State<EditProductScreen> {
   final _formKey = GlobalKey<FormState>();
+  final ProductService _productService = ProductService();
 
-  final TextEditingController nameController = TextEditingController(
-    text: "Cushion Cover",
-  );
+  late final TextEditingController nameController;
+  late final TextEditingController priceController;
+  late final TextEditingController oldPriceController;
+  late final TextEditingController imageUrlController;
+  late final TextEditingController descriptionController;
 
-  final TextEditingController priceController = TextEditingController(
-    text: "899",
-  );
+  late String category;
+  late int stock;
+  bool _isUpdating = false;
 
-  final TextEditingController descriptionController = TextEditingController(
-    text:
-        "Hand-dyed indigo fabric with unique geometric patterns. Made by master artisans using traditional vat-dyeing techniques",
-  );
-
-  String category = "Pottery";
-  int stock = 1;
-
-  final String productImage = "lib/assets/images/devart_product_1.webp";
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.product.name);
+    priceController = TextEditingController(
+      text: widget.product.price % 1 == 0
+          ? widget.product.price.toInt().toString()
+          : widget.product.price.toString(),
+    );
+    oldPriceController = TextEditingController(
+      text: widget.product.oldPrice != null
+          ? (widget.product.oldPrice! % 1 == 0
+              ? widget.product.oldPrice!.toInt().toString()
+              : widget.product.oldPrice!.toString())
+          : "",
+    );
+    imageUrlController = TextEditingController(
+      text: widget.product.image.startsWith("http") ? widget.product.image : "",
+    );
+    descriptionController = TextEditingController(
+      text: widget.product.description,
+    );
+    category = widget.product.category;
+    stock = widget.product.stock;
+  }
 
   @override
   void dispose() {
     nameController.dispose();
     priceController.dispose();
+    oldPriceController.dispose();
+    imageUrlController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
 
-  void _updateProduct() {
+  Future<void> _updateProduct() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    setState(() {
+      _isUpdating = true;
+    });
+
     showDialog(
       context: context,
-      builder: (dialogContext) {
-        return _successDialog(
-          dialogContext,
-          "Product Updated!",
-          "Product successfully updated.",
-          () {
-            Navigator.pop(dialogContext);
-            Navigator.pop(context);
-          },
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF704522)),
+      ),
     );
+
+    try {
+      final double price = double.parse(priceController.text.trim());
+      final double? oldPrice = oldPriceController.text.trim().isNotEmpty
+          ? double.tryParse(oldPriceController.text.trim())
+          : null;
+
+      final updatedProduct = widget.product.copyWith(
+        name: nameController.text.trim(),
+        category: category,
+        price: price,
+        oldPrice: oldPrice,
+        stock: stock,
+        description: descriptionController.text.trim(),
+        image: imageUrlController.text.trim().isNotEmpty
+            ? imageUrlController.text.trim()
+            : widget.product.image,
+      );
+
+      await _productService.updateProduct(updatedProduct);
+
+      if (!mounted) return;
+      Navigator.pop(context); // close loading
+
+      setState(() {
+        _isUpdating = false;
+      });
+
+      showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return _successDialog(
+            dialogContext,
+            "Product Updated!",
+            "Product changes saved successfully.",
+            () {
+              Navigator.pop(dialogContext);
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // close loading
+
+      setState(() {
+        _isUpdating = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error updating product: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _deleteProduct() {
@@ -85,22 +164,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              const Text(
-                "Are you sure you want to delete\nthis product? This action\ncannot be undone.",
+              Text(
+                "Are you sure you want to delete\n\"${widget.product.name}\"? This action cannot be undone.",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54, height: 1.5),
+                style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
               const SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.pop(dialogContext);
-                    _showDeleted();
+                    await _executeDelete();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA06D42),
+                    backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -117,9 +196,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 width: double.infinity,
                 height: 48,
                 child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
+                  onPressed: () => Navigator.pop(dialogContext),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.black54,
                     shape: RoundedRectangleBorder(
@@ -136,21 +213,44 @@ class _EditProductScreenState extends State<EditProductScreen> {
     );
   }
 
-  void _showDeleted() {
+  Future<void> _executeDelete() async {
     showDialog(
       context: context,
-      builder: (dialogContext) {
-        return _successDialog(
-          dialogContext,
-          "Product Deleted!",
-          "Product deleted successfully.",
-          () {
-            Navigator.pop(dialogContext);
-            Navigator.pop(context);
-          },
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF704522)),
+      ),
     );
+
+    try {
+      await _productService.deleteProduct(widget.product.id);
+      if (!mounted) return;
+      Navigator.pop(context); // close loading
+
+      showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return _successDialog(
+            dialogContext,
+            "Product Deleted!",
+            "Product has been removed from inventory.",
+            () {
+              Navigator.pop(dialogContext);
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // close loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error deleting product: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -162,7 +262,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
         child: Column(
           children: [
             _buildTitle("Edit Product"),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(13, 15, 13, 25),
@@ -170,14 +269,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildGallery(),
-
                     const SizedBox(height: 20),
-
                     _buildLabel("Product Name"),
-
                     TextFormField(
                       controller: nameController,
-                      decoration: _inputDecoration(Icons.edit, "Cushion Cover"),
+                      decoration: _inputDecoration(
+                        Icons.edit,
+                        "Product Name",
+                      ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return "Product name is required";
@@ -185,9 +284,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-
                     const SizedBox(height: 17),
-
                     Row(
                       children: [
                         Expanded(
@@ -208,16 +305,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
                               TextFormField(
                                 controller: priceController,
                                 keyboardType: TextInputType.number,
-                                decoration: _inputDecoration(null, "899"),
+                                decoration: _inputDecoration(null, "0.00"),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return "Required";
                                   }
-
                                   if (double.tryParse(value) == null) {
-                                    return "Invalid";
+                                    return "Invalid number";
                                   }
-
                                   return null;
                                 },
                               ),
@@ -226,20 +321,48 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 17),
-
-                    _buildLabel("Stock Quantity"),
-
-                    _buildStock(),
-
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("Old Price (₹)"),
+                              TextFormField(
+                                controller: oldPriceController,
+                                keyboardType: TextInputType.number,
+                                decoration: _inputDecoration(null, "Optional"),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("Stock Quantity"),
+                              _buildStock(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 17),
-
+                    _buildLabel("Image URL (Optional)"),
+                    TextFormField(
+                      controller: imageUrlController,
+                      decoration: _inputDecoration(
+                        Icons.image_outlined,
+                        "https://example.com/image.jpg",
+                      ),
+                    ),
+                    const SizedBox(height: 17),
                     _buildLabel("Description"),
-
                     TextFormField(
                       controller: descriptionController,
-                      maxLines: 5,
+                      maxLines: 4,
                       decoration: const InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -260,22 +383,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return "Description is required";
                         }
-
                         return null;
                       },
                     ),
-
                     const SizedBox(height: 28),
-
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 54,
                       child: ElevatedButton.icon(
-                        onPressed: _updateProduct,
+                        onPressed: _isUpdating ? null : _updateProduct,
                         icon: const Icon(Icons.save_outlined),
-                        label: const Text(
-                          "Update Changes",
-                          style: TextStyle(
+                        label: Text(
+                          _isUpdating ? "Saving..." : "Update Changes",
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -289,14 +409,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 54,
                       child: OutlinedButton.icon(
-                        onPressed: _deleteProduct,
+                        onPressed: _isUpdating ? null : _deleteProduct,
                         icon: const Icon(
                           Icons.delete_outline,
                           color: Colors.red,
@@ -328,126 +446,68 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Widget _buildTitle(String title) {
-    return SizedBox(
-      child: Container(
-        height: 59,
-        width: double.infinity,
-        color: const Color(0xFFF5E9E5),
-        alignment: Alignment.center,
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(
-                Icons.arrow_back_ios_new,
-                size: 25,
-                color: Colors.black,
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 31,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFB56F6F),
-                    fontFamily: "serif",
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 48),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGallery() {
-    return SizedBox(
-      height: 280,
+    return Container(
+      height: 59,
+      width: double.infinity,
+      color: const Color(0xFFF5E9E5),
+      alignment: Alignment.center,
       child: Row(
         children: [
-          Expanded(
-            flex: 3,
-            child: Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: 255,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFFD8BBA9),
-                      width: 2,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(productImage, fit: BoxFit.cover),
-                  ),
-                ),
-                Positioned(
-                  bottom: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFA06D42),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(
-                          Icons.camera_alt_outlined,
-                          color: Colors.white,
-                          size: 17,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          "Update Image",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 25,
+              color: Colors.black,
             ),
           ),
-          const SizedBox(width: 18),
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [_thumbnail(), _thumbnail(), _thumbnail()],
+            child: Center(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 31,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB56F6F),
+                  fontFamily: "serif",
+                ),
+              ),
             ),
           ),
+          const SizedBox(width: 48),
         ],
       ),
     );
   }
 
-  Widget _thumbnail() {
-    return Container(
-      width: double.infinity,
-      height: 80,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD8BBA9)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.asset(productImage, fit: BoxFit.cover),
+  Widget _buildGallery() {
+    final imagePath = widget.product.image;
+    return SizedBox(
+      height: 200,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFD8BBA9), width: 2),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: imagePath.startsWith("http")
+              ? Image.network(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Image.asset(
+                    'lib/assets/images/devart_product_1.webp',
+                    fit: BoxFit.cover,
+                  ),
+                )
+              : Image.asset(
+                  imagePath.isNotEmpty
+                      ? imagePath
+                      : 'lib/assets/images/devart_product_1.webp',
+                  fit: BoxFit.cover,
+                ),
+        ),
       ),
     );
   }
@@ -505,9 +565,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
             DropdownMenuItem(value: "Handicrafts", child: Text("Handicrafts")),
           ],
           onChanged: (value) {
-            setState(() {
-              category = value!;
-            });
+            if (value != null) {
+              setState(() {
+                category = value;
+              });
+            }
           },
         ),
       ),
@@ -526,8 +588,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
             }
           },
           child: Container(
-            width: 30,
-            height: 49,
+            width: 32,
+            height: 48,
             decoration: BoxDecoration(
               color: const Color(0xFFE2E2E2),
               borderRadius: BorderRadius.circular(12),
@@ -535,10 +597,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
             child: const Icon(Icons.remove),
           ),
         ),
-        const SizedBox(width: 15),
+        const SizedBox(width: 8),
         Expanded(
           child: Container(
-            height: 50,
+            height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: Colors.white,
@@ -551,7 +613,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 15),
+        const SizedBox(width: 8),
         GestureDetector(
           onTap: () {
             setState(() {
@@ -559,8 +621,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
             });
           },
           child: Container(
-            width: 30,
-            height: 49,
+            width: 32,
+            height: 48,
             decoration: BoxDecoration(
               color: const Color(0xFFE2E2E2),
               borderRadius: BorderRadius.circular(12),

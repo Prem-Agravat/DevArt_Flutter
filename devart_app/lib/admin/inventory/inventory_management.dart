@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
 import 'package:devart/admin/inventory/add_product.dart';
 import 'package:devart/admin/inventory/edit_product.dart';
+import 'package:devart/models/product_model.dart';
+import 'package:devart/services/product_service.dart';
 
 class InventoryManagementScreen extends StatefulWidget {
   const InventoryManagementScreen({super.key});
@@ -13,40 +15,24 @@ class InventoryManagementScreen extends StatefulWidget {
 
 class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ProductService _productService = ProductService();
 
   int selectedCategory = 0;
 
   final List<String> categories = [
     "All",
+    "Pottery",
     "Cushion Covers",
     "Toran",
     "Sofa Covers",
     "Handicrafts",
   ];
 
-  final List<Map<String, String>> products = [
-    {
-      "name": "IndigoGeometry",
-      "category": "Handwoven-cotton",
-      "price": "₹899",
-      "oldPrice": "₹1009",
-      "image": "lib/assets/images/devart_product_1.webp",
-    },
-    {
-      "name": "IndigoGeometry",
-      "category": "Handwoven-cotton",
-      "price": "₹899",
-      "oldPrice": "₹1009",
-      "image": "lib/assets/images/devart_product_1.webp",
-    },
-    {
-      "name": "IndigoGeometry",
-      "category": "Handwoven-cotton",
-      "price": "₹899",
-      "oldPrice": "₹1009",
-      "image": "lib/assets/images/devart_product_1.webp",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _productService.seedInitialProductsIfEmpty();
+  }
 
   @override
   void dispose() {
@@ -54,8 +40,105 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     super.dispose();
   }
 
+  void _confirmDelete(BuildContext context, ProductModel product) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(25, 25, 25, 15),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircleAvatar(
+                radius: 30,
+                backgroundColor: Color(0xFFFFD7D7),
+                child: Icon(
+                  Icons.delete_forever_outlined,
+                  color: Colors.red,
+                  size: 35,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                "Delete Product",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Are you sure you want to delete\n\"${product.name}\"?",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(dialogContext);
+                    try {
+                      await _productService.deleteProduct(product.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Product deleted successfully."),
+                            backgroundColor: Color(0xFF704522),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Failed to delete product: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Delete",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.black54,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text("Cancel"),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final selectedCategoryName = categories[selectedCategory];
+
     return AdminShell(
       selectedIndex: 1,
       child: Stack(
@@ -85,9 +168,55 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                       _buildSearchBox(),
                       const SizedBox(height: 10),
                       _buildCategoryList(),
-                      const SizedBox(height: 12),
-                      ...products.map(
-                        (product) => _buildProductCard(context, product),
+                      const SizedBox(height: 14),
+                      StreamBuilder<List<ProductModel>>(
+                        stream: _productService.getProductsStream(
+                          category: selectedCategoryName,
+                          searchQuery: _searchController.text,
+                        ),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.only(top: 80),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF704522),
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (snapshot.hasError) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 60),
+                              child: Center(
+                                child: Text(
+                                  "Error loading products: ${snapshot.error}",
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final products = snapshot.data ?? [];
+
+                          if (products.isEmpty) {
+                            return _buildEmptyState();
+                          }
+
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: products.length,
+                            itemBuilder: (context, index) {
+                              return _buildProductCard(
+                                context,
+                                products[index],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -137,14 +266,15 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       ),
       child: TextField(
         controller: _searchController,
+        onChanged: (_) => setState(() {}),
         decoration: const InputDecoration(
           border: InputBorder.none,
           prefixIcon: Icon(Icons.search, size: 28, color: Colors.black),
-          hintText: "Search",
+          hintText: "Search products...",
           hintStyle: TextStyle(
-            color: Colors.black,
+            color: Colors.black54,
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 15,
           ),
           contentPadding: EdgeInsets.only(top: 10),
         ),
@@ -199,11 +329,11 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, Map<String, String> product) {
+  Widget _buildProductCard(BuildContext context, ProductModel product) {
     return Container(
       width: double.infinity,
       height: 124,
-      margin: const EdgeInsets.only(bottom: 14, left: 10, right: 10),
+      margin: const EdgeInsets.only(bottom: 14, left: 6, right: 6),
       padding: const EdgeInsets.all(7),
       decoration: BoxDecoration(
         color: const Color(0xFFD8D8D8),
@@ -212,24 +342,39 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 26),
+          const SizedBox(width: 16),
           ClipRRect(
             borderRadius: BorderRadius.circular(9),
-            child: Image.asset(
-              product["image"]!,
-              width: 96,
-              height: 96,
-              fit: BoxFit.cover,
-            ),
+            child: (product.image.startsWith("http"))
+                ? Image.network(
+                    product.image,
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      'lib/assets/images/devart_product_1.webp',
+                      width: 96,
+                      height: 96,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Image.asset(
+                    product.image.isNotEmpty
+                        ? product.image
+                        : 'lib/assets/images/devart_product_1.webp',
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.cover,
+                  ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  product["name"]!,
+                  product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -238,36 +383,68 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                     fontFamily: "serif",
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  product["category"]!,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "serif",
-                  ),
-                ),
-                const SizedBox(height: 13),
+                const SizedBox(height: 3),
                 Row(
                   children: [
                     Text(
-                      product["price"]!,
+                      product.category,
                       style: const TextStyle(
-                        fontSize: 19,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         fontFamily: "serif",
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      product["oldPrice"]!,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.lineThrough,
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: product.stock > 0
+                            ? const Color(0xFFD0E3FF)
+                            : const Color(0xFFFFD7D7),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        product.stock > 0
+                            ? "Stock: ${product.stock}"
+                            : "Out of Stock",
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: product.stock > 0
+                              ? const Color(0xFF1E3A8A)
+                              : Colors.red,
+                        ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Text(
+                      "₹${product.price.toStringAsFixed(product.price % 1 == 0 ? 0 : 2)}",
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "serif",
+                      ),
+                    ),
+                    if (product.oldPrice != null &&
+                        product.oldPrice! > product.price) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        "₹${product.oldPrice!.toStringAsFixed(product.oldPrice! % 1 == 0 ? 0 : 2)}",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -276,12 +453,15 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(right: 8, top: 5),
-                child: Icon(
-                  Icons.delete_outline,
-                  size: 21,
-                  color: Colors.black54,
+              Padding(
+                padding: const EdgeInsets.only(right: 8, top: 5),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 23,
+                    color: Colors.red,
+                  ),
+                  onPressed: () => _confirmDelete(context, product),
                 ),
               ),
               GestureDetector(
@@ -289,22 +469,52 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const EditProductScreen(),
+                      builder: (_) => EditProductScreen(product: product),
                     ),
                   );
                 },
                 child: Container(
-                  width: 78,
+                  width: 72,
                   height: 34,
                   margin: const EdgeInsets.only(right: 8, bottom: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFA06D42),
                     borderRadius: BorderRadius.circular(22),
                   ),
-                  child: const Icon(Icons.edit, color: Colors.white, size: 21),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 19),
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 60),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.inventory_2_outlined,
+            size: 65,
+            color: Colors.black38,
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            "No Products Found",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: "serif",
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Add your first product by tapping the + button below.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54),
           ),
         ],
       ),
