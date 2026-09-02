@@ -313,28 +313,6 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           ),
 
           Positioned(
-            top: 45,
-            left: 15,
-            child: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white70,
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new,
-                  size: 25,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
             top: 80,
             left: 0,
             right: 0,
