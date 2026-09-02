@@ -6,24 +6,39 @@ class ProductService {
       FirebaseFirestore.instance.collection('products');
 
   // ============================================================
-  // STREAM REAL-TIME PRODUCTS
+  // STREAM REAL-TIME PRODUCTS (Zero composite index requirement)
   // ============================================================
 
   Stream<List<ProductModel>> getProductsStream({
     String? category,
     String? searchQuery,
   }) {
-    Query query = _productsRef.orderBy('createdAt', descending: true);
-
-    if (category != null && category != "All" && category.isNotEmpty) {
-      query = query.where('category', isEqualTo: category);
-    }
-
-    return query.snapshots().map((snapshot) {
+    // Listen to all products and perform sorting + filtering client-side
+    // This prevents Firestore composite index errors (failed-precondition)
+    return _productsRef.snapshots().map((snapshot) {
       List<ProductModel> products = snapshot.docs
           .map((doc) => ProductModel.fromFirestore(doc))
           .toList();
 
+      // Sort by newest created first
+      products.sort((a, b) {
+        if (a.createdAt == null && b.createdAt == null) return 0;
+        if (a.createdAt == null) return 1;
+        if (b.createdAt == null) return -1;
+        return b.createdAt!.compareTo(a.createdAt!);
+      });
+
+      // Filter by Category
+      if (category != null &&
+          category != "All" &&
+          category.trim().isNotEmpty) {
+        final cat = category.trim().toLowerCase();
+        products = products.where((p) {
+          return p.category.trim().toLowerCase() == cat;
+        }).toList();
+      }
+
+      // Filter by Search Query
       if (searchQuery != null && searchQuery.trim().isNotEmpty) {
         final q = searchQuery.trim().toLowerCase();
         products = products.where((p) {
@@ -102,6 +117,28 @@ class ProductService {
             stock: 12,
             description:
                 'Earthy clay pottery vase fired with natural glazes, perfect for living spaces.',
+            image: 'lib/assets/images/devart_product_1.webp',
+          ),
+          ProductModel(
+            id: '',
+            name: 'Artisan Embroidered Sofa Cover',
+            category: 'Sofa Covers',
+            price: 1899.0,
+            oldPrice: 2299.0,
+            stock: 6,
+            description:
+                'Luxurious hand-embroidered sofa slip cover made with heavy organic cotton fabric.',
+            image: 'lib/assets/images/devart_product_1.webp',
+          ),
+          ProductModel(
+            id: '',
+            name: 'Handmade Wooden Wall Hanging',
+            category: 'Handicrafts',
+            price: 1199.0,
+            oldPrice: 1499.0,
+            stock: 10,
+            description:
+                'Intricately carved wooden wall panel showcasing authentic heritage folk art.',
             image: 'lib/assets/images/devart_product_1.webp',
           ),
         ];

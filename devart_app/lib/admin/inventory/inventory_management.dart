@@ -188,21 +188,16 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                           }
 
                           if (snapshot.hasError) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 60),
-                              child: Center(
-                                child: Text(
-                                  "Error loading products: ${snapshot.error}",
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            );
+                            return _buildErrorState(snapshot.error.toString());
                           }
 
                           final products = snapshot.data ?? [];
 
                           if (products.isEmpty) {
-                            return _buildEmptyState();
+                            return _buildEmptyState(
+                              category: selectedCategoryName,
+                              searchQuery: _searchController.text.trim(),
+                            );
                           }
 
                           return ListView.builder(
@@ -267,16 +262,25 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: (_) => setState(() {}),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           border: InputBorder.none,
-          prefixIcon: Icon(Icons.search, size: 28, color: Colors.black),
+          prefixIcon: const Icon(Icons.search, size: 28, color: Colors.black),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 20, color: Colors.black54),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                )
+              : null,
           hintText: "Search products...",
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             color: Colors.black54,
             fontWeight: FontWeight.bold,
             fontSize: 15,
           ),
-          contentPadding: EdgeInsets.only(top: 10),
+          contentPadding: const EdgeInsets.only(top: 10),
         ),
       ),
     );
@@ -299,26 +303,27 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
               });
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: selected
-                    ? const Color(0xFFD1D1D1)
+                    ? const Color(0xFF704522)
                     : const Color(0xFFE1E1E1),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: const [
                   BoxShadow(
-                    color: Colors.black26,
+                    color: Colors.black12,
                     blurRadius: 4,
-                    offset: Offset(0, 3),
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
               child: Text(
                 categories[index],
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
+                  color: selected ? Colors.white : Colors.black87,
                   fontFamily: "serif",
                 ),
               ),
@@ -491,30 +496,110 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState({
+    required String category,
+    required String searchQuery,
+  }) {
+    String title = "No Products Found";
+    String subtitle = "Add your first product by tapping the + button below.";
+
+    if (searchQuery.isNotEmpty && category != "All") {
+      title = "No Matching Products";
+      subtitle =
+          "No products matching \"$searchQuery\" in category \"$category\".";
+    } else if (searchQuery.isNotEmpty) {
+      title = "No Results Found";
+      subtitle = "No products match \"$searchQuery\". Try another search term.";
+    } else if (category != "All") {
+      title = "Empty Category";
+      subtitle = "No products found in category \"$category\".";
+    }
+
     return Padding(
-      padding: const EdgeInsets.only(top: 60),
+      padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
       child: Column(
         children: [
-          const Icon(
-            Icons.inventory_2_outlined,
-            size: 65,
-            color: Colors.black38,
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5E9E5),
+              borderRadius: BorderRadius.circular(35),
+            ),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              size: 38,
+              color: Color(0xFF704522),
+            ),
           ),
-          const SizedBox(height: 15),
-          const Text(
-            "No Products Found",
-            style: TextStyle(
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               fontFamily: "serif",
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "Add your first product by tapping the + button below.",
+          Text(
+            subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.black54),
+            style: const TextStyle(color: Colors.black54, fontSize: 13),
+          ),
+          const SizedBox(height: 20),
+          if (category != "All" || searchQuery.isNotEmpty)
+            OutlinedButton.icon(
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  selectedCategory = 0; // reset to "All"
+                });
+              },
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text("Show All Products"),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF704522),
+                side: const BorderSide(color: Color(0xFF704522)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
+      child: Column(
+        children: [
+          const Icon(Icons.cloud_off_outlined, size: 55, color: Colors.redAccent),
+          const SizedBox(height: 14),
+          const Text(
+            "Unable to load products",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Please check your internet connection or try again.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => setState(() {}),
+            icon: const Icon(Icons.refresh),
+            label: const Text("Retry"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF704522),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
         ],
       ),
