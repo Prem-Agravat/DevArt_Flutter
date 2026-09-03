@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
+import 'package:devart/models/order_model.dart';
+import 'package:devart/services/order_service.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
-  final Map<String, dynamic> order;
+  final OrderModel order;
 
   const OrderDetailsScreen({super.key, required this.order});
 
@@ -11,8 +13,10 @@ class OrderDetailsScreen extends StatefulWidget {
 }
 
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
-  late Map<String, dynamic> _order;
+  late OrderModel _order;
   late String status;
+  final OrderService _orderService = OrderService();
+  bool _isUpdating = false;
 
   final List<Map<String, dynamic>> items = [
     {"name": "Indigo Cushion Cover", "quantity": 2, "price": "₹899"},
@@ -22,8 +26,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _order = Map<String, dynamic>.from(widget.order);
-    status = _order["status"] ?? "Pending";
+    _order = widget.order;
+    status = _order.status;
   }
 
   List<String> get _availableDropdownStatuses {
@@ -35,17 +39,32 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     return ["Pending", "Shipped", "Delivered", "Cancelled"];
   }
 
-  void _updateStatus(String value) {
+  Future<void> _updateStatus(String value) async {
     setState(() {
       status = value;
-      _order["status"] = value;
-      if (value == "Delivered") {
-        _order["paymentStatus"] = "Paid";
-      } else if (value == "Cancelled") {
-        _order["paymentStatus"] = "Refunded";
-      }
+      _isUpdating = true;
     });
 
+    if (_order.id.isNotEmpty) {
+      await _orderService.updateOrderStatus(_order.id, value);
+    }
+
+    if (mounted) {
+      setState(() {
+        _isUpdating = false;
+        _order = _order.copyWith(
+          status: value,
+          paymentStatus: value == "Delivered"
+              ? "Paid"
+              : (value == "Cancelled" ? "Refunded" : "Pending (COD)"),
+        );
+      });
+
+      _showSuccessDialog(value);
+    }
+  }
+
+  void _showSuccessDialog(String value) {
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -73,7 +92,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                "Order status changed to $value.",
+                "Order status changed to $value on database.",
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54),
               ),
@@ -107,56 +126,48 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          Navigator.pop(context, _order);
-        }
-      },
-      child: AdminShell(
-        selectedIndex: 2,
-        child: Column(
-          children: [
-            _buildTitle(),
+    return AdminShell(
+      selectedIndex: 2,
+      child: Column(
+        children: [
+          _buildTitle(),
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(13, 15, 13, 25),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildOrderHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(13, 15, 13, 25),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildOrderHeader(),
 
-                    const SizedBox(height: 18),
+                  const SizedBox(height: 18),
 
-                    _buildSectionTitle("Customer Information"),
+                  _buildSectionTitle("Customer Information"),
 
-                    _buildCustomerCard(),
+                  _buildCustomerCard(),
 
-                    const SizedBox(height: 18),
+                  const SizedBox(height: 18),
 
-                    _buildSectionTitle("Order Items"),
+                  _buildSectionTitle("Order Items"),
 
-                    ...items.map((item) => _buildItemCard(item)),
+                  ...items.map((item) => _buildItemCard(item)),
 
-                    const SizedBox(height: 18),
+                  const SizedBox(height: 18),
 
-                    _buildSectionTitle("Order Summary"),
+                  _buildSectionTitle("Order Summary"),
 
-                    _buildSummary(),
+                  _buildSummary(),
 
-                    const SizedBox(height: 18),
+                  const SizedBox(height: 18),
 
-                    _buildSectionTitle("Update Order Status"),
+                  _buildSectionTitle("Update Order Status"),
 
-                    _buildStatusDropdown(),
-                  ],
-                ),
+                  _buildStatusDropdown(),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -170,7 +181,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context, _order);
+              Navigator.pop(context);
             },
             icon: const Icon(
               Icons.arrow_back_ios_new,
@@ -223,7 +234,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _order["id"] ?? "",
+                  _order.orderId,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -232,7 +243,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _order["date"] ?? "",
+                  _order.date,
                   style: const TextStyle(color: Colors.black54, fontSize: 12),
                 ),
               ],
@@ -269,16 +280,16 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
       child: Column(
         children: [
-          _infoRow(Icons.person_outline, "Customer", _order["customer"] ?? "Customer"),
+          _infoRow(Icons.person_outline, "Customer", _order.customer),
           const Divider(),
-          _infoRow(Icons.email_outlined, "Email", "customer@example.com"),
+          _infoRow(Icons.email_outlined, "Email", _order.email),
           const Divider(),
-          _infoRow(Icons.phone_outlined, "Phone", "+91 98765 43210"),
+          _infoRow(Icons.phone_outlined, "Phone", _order.phone),
           const Divider(),
           _infoRow(
             Icons.location_on_outlined,
             "Address",
-            "Rajkot, Gujarat, India",
+            _order.address,
           ),
         ],
       ),
@@ -372,11 +383,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         children: [
           _summaryRow("Subtotal", "₹2,497"),
           const SizedBox(height: 9),
-          _summaryRow("Delivery", "₹0"),
+          _summaryRow("Delivery (COD)", "₹0 (Free)"),
           const SizedBox(height: 9),
           _summaryRow("Discount", "-₹0"),
           const Divider(height: 22),
-          _summaryRow("Total", _order["amount"] ?? "₹2,499", bold: true),
+          _summaryRow("Total", _order.amount, bold: true),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -392,7 +403,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  "Payment Status",
+                  "Payment Mode & Status",
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
                 Container(
@@ -406,10 +417,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   child: Text(
                     isDelivered
-                        ? "PAID"
-                        : (isCancelled
-                            ? "REFUNDED"
-                            : (_order["paymentStatus"] ?? "PAID")),
+                        ? "PAID (COD)"
+                        : (isCancelled ? "CANCELLED" : "COD - PENDING"),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -458,29 +467,42 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFD8BBA9)),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: dropdownItems.contains(status) ? status : dropdownItems.first,
-          isExpanded: true,
-          items: dropdownItems.map((st) {
-            return DropdownMenuItem<String>(
-              value: st,
-              child: Text(
-                st,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: st == "Cancelled" ? Colors.red : Colors.black87,
+      child: _isUpdating
+          ? const Center(
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF704522),
                 ),
               ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null && value != status) {
-              _updateStatus(value);
-            }
-          },
-        ),
-      ),
+            )
+          : DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: dropdownItems.contains(status)
+                    ? status
+                    : dropdownItems.first,
+                isExpanded: true,
+                items: dropdownItems.map((st) {
+                  return DropdownMenuItem<String>(
+                    value: st,
+                    child: Text(
+                      st,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: st == "Cancelled" ? Colors.red : Colors.black87,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null && value != status) {
+                    _updateStatus(value);
+                  }
+                },
+              ),
+            ),
     );
   }
 

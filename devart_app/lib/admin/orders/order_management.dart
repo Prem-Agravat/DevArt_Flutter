@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
 import 'package:devart/admin/orders/order_details.dart';
+import 'package:devart/models/order_model.dart';
+import 'package:devart/services/order_service.dart';
 
 class OrderManagementScreen extends StatefulWidget {
   const OrderManagementScreen({super.key});
@@ -12,6 +14,7 @@ class OrderManagementScreen extends StatefulWidget {
 class _OrderManagementScreenState extends State<OrderManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _statusScrollController = ScrollController();
+  final OrderService _orderService = OrderService();
 
   int selectedStatus = 0;
 
@@ -23,53 +26,11 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     "Cancelled",
   ];
 
-  final List<Map<String, dynamic>> orders = [
-    {
-      "id": "#DV1001",
-      "customer": "Rahul Patel",
-      "date": "23 Aug 2026",
-      "items": "3 Items",
-      "amount": "₹2,499",
-      "status": "Pending",
-      "paymentStatus": "Paid",
-    },
-    {
-      "id": "#DV1002",
-      "customer": "Priya Shah",
-      "date": "22 Aug 2026",
-      "items": "2 Items",
-      "amount": "₹1,899",
-      "status": "Pending",
-      "paymentStatus": "Paid",
-    },
-    {
-      "id": "#DV1003",
-      "customer": "Amit Joshi",
-      "date": "22 Aug 2026",
-      "items": "4 Items",
-      "amount": "₹3,799",
-      "status": "Shipped",
-      "paymentStatus": "Paid",
-    },
-    {
-      "id": "#DV1004",
-      "customer": "Neha Mehta",
-      "date": "21 Aug 2026",
-      "items": "1 Item",
-      "amount": "₹899",
-      "status": "Delivered",
-      "paymentStatus": "Paid",
-    },
-    {
-      "id": "#DV1005",
-      "customer": "Dev Chauhan",
-      "date": "20 Aug 2026",
-      "items": "5 Items",
-      "amount": "₹4,299",
-      "status": "Cancelled",
-      "paymentStatus": "Refunded",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _orderService.seedInitialOrdersIfEmpty();
+  }
 
   @override
   void dispose() {
@@ -78,23 +39,10 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     super.dispose();
   }
 
-  List<Map<String, dynamic>> get filteredOrders {
-    final search = _searchController.text.toLowerCase().trim();
-
-    return orders.where((order) {
-      final matchesSearch = search.isEmpty ||
-          order["id"].toString().toLowerCase().contains(search) ||
-          order["customer"].toString().toLowerCase().contains(search);
-
-      final matchesStatus =
-          selectedStatus == 0 || order["status"] == statuses[selectedStatus];
-
-      return matchesSearch && matchesStatus;
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final currentStatus = statuses[selectedStatus];
+
     return AdminShell(
       selectedIndex: 2,
       child: Column(
@@ -119,13 +67,51 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Column(
-                      children: [
-                        ...filteredOrders.map(
-                          (order) => _buildOrderCard(context, order),
-                        ),
-                        if (filteredOrders.isEmpty) _buildEmptyState(),
-                      ],
+                    child: StreamBuilder<List<OrderModel>>(
+                      stream: _orderService.getOrdersStream(
+                        status: currentStatus,
+                        searchQuery: _searchController.text,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 60),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF704522),
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Center(
+                              child: Text(
+                                "Error loading orders: ${snapshot.error}",
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final orders = snapshot.data ?? [];
+
+                        if (orders.isEmpty) {
+                          return _buildEmptyState();
+                        }
+
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: orders.length,
+                          itemBuilder: (context, index) {
+                            return _buildOrderCard(context, orders[index]);
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -167,12 +153,21 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
         onChanged: (_) {
           setState(() {});
         },
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           border: InputBorder.none,
-          prefixIcon: Icon(Icons.search, size: 27, color: Colors.black),
+          prefixIcon: const Icon(Icons.search, size: 27, color: Colors.black),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18, color: Colors.black54),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                )
+              : null,
           hintText: "Search Order ID or Customer",
-          hintStyle: TextStyle(color: Colors.black54, fontSize: 14),
-          contentPadding: EdgeInsets.only(top: 12),
+          hintStyle: const TextStyle(color: Colors.black54, fontSize: 14),
+          contentPadding: const EdgeInsets.only(top: 12),
         ),
       ),
     );
@@ -226,7 +221,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, Map<String, dynamic> order) {
+  Widget _buildOrderCard(BuildContext context, OrderModel order) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 14),
@@ -262,7 +257,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      order["id"],
+                      order.orderId,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -271,7 +266,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      order["customer"],
+                      order.customer,
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -280,7 +275,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                   ],
                 ),
               ),
-              _buildStatusBadge(order["status"]),
+              _buildStatusBadge(order.status),
             ],
           ),
           const SizedBox(height: 15),
@@ -292,21 +287,21 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                 child: _buildOrderInfo(
                   Icons.calendar_today_outlined,
                   "Date",
-                  order["date"],
+                  order.date,
                 ),
               ),
               Expanded(
                 child: _buildOrderInfo(
                   Icons.shopping_cart_outlined,
                   "Items",
-                  order["items"],
+                  order.items,
                 ),
               ),
               Expanded(
                 child: _buildOrderInfo(
                   Icons.currency_rupee,
                   "Total",
-                  order["amount"],
+                  order.amount,
                 ),
               ),
             ],
@@ -316,23 +311,13 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
             width: double.infinity,
             height: 43,
             child: ElevatedButton(
-              onPressed: () async {
-                final updated = await Navigator.push<Map<String, dynamic>>(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => OrderDetailsScreen(order: order),
                   ),
                 );
-                if (updated != null && mounted) {
-                  setState(() {
-                    final idx =
-                        orders.indexWhere((o) => o["id"] == updated["id"]);
-                    if (idx != -1) {
-                      orders[idx]["status"] = updated["status"];
-                      orders[idx]["paymentStatus"] = updated["paymentStatus"] ?? orders[idx]["paymentStatus"];
-                    }
-                  });
-                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFA06D42),
