@@ -27,10 +27,11 @@ class OrderService {
       // Filter by Status (Pending, Shipped, Delivered, Cancelled)
       if (status != null && status != "All" && status.trim().isNotEmpty) {
         final st = status.trim().toLowerCase();
-        orders = orders.where((o) => o.status.trim().toLowerCase() == st).toList();
+        orders =
+            orders.where((o) => o.status.trim().toLowerCase() == st).toList();
       }
 
-      // Filter by Search Query (ID or Customer)
+      // Filter by Search Query (ID, Customer, or Phone)
       if (searchQuery != null && searchQuery.trim().isNotEmpty) {
         final q = searchQuery.trim().toLowerCase();
         orders = orders.where((o) {
@@ -78,7 +79,7 @@ class OrderService {
   }
 
   // ============================================================
-  // SEED INITIAL ORDERS (Runs only if Firestore is empty)
+  // SEED INITIAL ORDERS
   // ============================================================
   Future<void> seedInitialOrdersIfEmpty() async {
     try {
@@ -93,9 +94,18 @@ class OrderService {
             phone: '+91 98765 12345',
             address: '402, Shivam Heights, Kalawad Road, Rajkot - 360005',
             date: '23 Aug 2026',
-            items: '3 Items',
-            amount: '₹2,499',
-            rawAmount: 2499.0,
+            items: [
+              OrderItemModel(
+                name: 'Indigo Cushion Cover',
+                quantity: 2,
+                price: 899.0,
+              ),
+              OrderItemModel(
+                name: 'Handmade Toran',
+                quantity: 1,
+                price: 701.0,
+              ),
+            ],
             status: 'Pending',
             paymentMethod: 'Cash on Delivery (COD)',
             paymentStatus: 'Pending (COD)',
@@ -107,11 +117,21 @@ class OrderService {
             customer: 'Priya Shah',
             email: 'priyashah@gmail.com',
             phone: '+91 98765 67890',
-            address: '12, Shanti Niketan Society, University Road, Rajkot - 360005',
+            address:
+                '12, Shanti Niketan Society, University Road, Rajkot - 360005',
             date: '22 Aug 2026',
-            items: '2 Items',
-            amount: '₹1,899',
-            rawAmount: 1899.0,
+            items: [
+              OrderItemModel(
+                name: 'Terracotta Clay Pot',
+                quantity: 1,
+                price: 999.0,
+              ),
+              OrderItemModel(
+                name: 'Indigo Cushion Cover',
+                quantity: 1,
+                price: 900.0,
+              ),
+            ],
             status: 'Pending',
             paymentMethod: 'Cash on Delivery (COD)',
             paymentStatus: 'Pending (COD)',
@@ -125,9 +145,23 @@ class OrderService {
             phone: '+91 98765 24680',
             address: 'B-304, Royal Palms, 150 Feet Ring Road, Rajkot - 360004',
             date: '22 Aug 2026',
-            items: '4 Items',
-            amount: '₹3,799',
-            rawAmount: 3799.0,
+            items: [
+              OrderItemModel(
+                name: 'Handmade Toran',
+                quantity: 2,
+                price: 1100.0,
+              ),
+              OrderItemModel(
+                name: 'Terracotta Clay Pot',
+                quantity: 1,
+                price: 1099.0,
+              ),
+              OrderItemModel(
+                name: 'Indigo Cushion Cover',
+                quantity: 1,
+                price: 500.0,
+              ),
+            ],
             status: 'Shipped',
             paymentMethod: 'Cash on Delivery (COD)',
             paymentStatus: 'Pending (COD)',
@@ -141,9 +175,13 @@ class OrderService {
             phone: '+91 98765 13579',
             address: '78, Golden Park, Amin Marg, Rajkot - 360001',
             date: '21 Aug 2026',
-            items: '1 Item',
-            amount: '₹899',
-            rawAmount: 899.0,
+            items: [
+              OrderItemModel(
+                name: 'Indigo Cushion Cover',
+                quantity: 1,
+                price: 899.0,
+              ),
+            ],
             status: 'Delivered',
             paymentMethod: 'Cash on Delivery (COD)',
             paymentStatus: 'Paid',
@@ -157,9 +195,23 @@ class OrderService {
             phone: '+91 98765 43210',
             address: '501, Silver Crest, Nana Mava Road, Rajkot - 360005',
             date: '20 Aug 2026',
-            items: '5 Items',
-            amount: '₹4,299',
-            rawAmount: 4299.0,
+            items: [
+              OrderItemModel(
+                name: 'Terracotta Clay Pot',
+                quantity: 2,
+                price: 1500.0,
+              ),
+              OrderItemModel(
+                name: 'Indigo Cushion Cover',
+                quantity: 2,
+                price: 500.0,
+              ),
+              OrderItemModel(
+                name: 'Handmade Toran',
+                quantity: 1,
+                price: 299.0,
+              ),
+            ],
             status: 'Cancelled',
             paymentMethod: 'Cash on Delivery (COD)',
             paymentStatus: 'Refunded / Cancelled',

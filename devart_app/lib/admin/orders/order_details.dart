@@ -18,11 +18,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   final OrderService _orderService = OrderService();
   bool _isUpdating = false;
 
-  final List<Map<String, dynamic>> items = [
-    {"name": "Indigo Cushion Cover", "quantity": 2, "price": "₹899"},
-    {"name": "Handmade Toran", "quantity": 1, "price": "₹699"},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -56,7 +51,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           status: value,
           paymentStatus: value == "Delivered"
               ? "Paid"
-              : (value == "Cancelled" ? "Refunded" : "Pending (COD)"),
+              : (value == "Cancelled" ? "Refunded / Cancelled" : "Pending (COD)"),
         );
       });
 
@@ -148,9 +143,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
                   const SizedBox(height: 18),
 
-                  _buildSectionTitle("Order Items"),
+                  _buildSectionTitle("Order Items (${_order.items.length})"),
 
-                  ...items.map((item) => _buildItemCard(item)),
+                  ..._order.items.map((item) => _buildItemCard(item)),
 
                   const SizedBox(height: 18),
 
@@ -317,7 +312,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildItemCard(Map<String, dynamic> item) {
+  Widget _buildItemCard(OrderItemModel item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(10),
@@ -330,7 +325,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.asset(
-              "lib/assets/images/devart_product_1.webp",
+              item.image,
               width: 70,
               height: 70,
               fit: BoxFit.cover,
@@ -342,7 +337,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item["name"],
+                  item.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -353,15 +348,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Quantity: ${item["quantity"]}",
+                  "Quantity: ${item.quantity}  •  ${item.formattedPrice} each",
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
           ),
           Text(
-            item["price"],
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            item.formattedTotal,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF704522),
+            ),
           ),
         ],
       ),
@@ -381,13 +380,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
       child: Column(
         children: [
-          _summaryRow("Subtotal", "₹2,497"),
+          _summaryRow("Subtotal", _order.formattedSubtotal),
           const SizedBox(height: 9),
-          _summaryRow("Delivery (COD)", "₹0 (Free)"),
+          _summaryRow("Delivery (COD)", _order.formattedDeliveryFee),
           const SizedBox(height: 9),
-          _summaryRow("Discount", "-₹0"),
+          _summaryRow("Discount", _order.formattedDiscount),
           const Divider(height: 22),
-          _summaryRow("Total", _order.amount, bold: true),
+          _summaryRow("Total", _order.formattedTotal, bold: true),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

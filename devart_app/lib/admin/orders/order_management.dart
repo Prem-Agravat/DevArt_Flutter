@@ -294,14 +294,14 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                 child: _buildOrderInfo(
                   Icons.shopping_cart_outlined,
                   "Items",
-                  order.items,
+                  order.formattedItemsCount,
                 ),
               ),
               Expanded(
                 child: _buildOrderInfo(
                   Icons.currency_rupee,
                   "Total",
-                  order.amount,
+                  order.formattedTotal,
                 ),
               ),
             ],
