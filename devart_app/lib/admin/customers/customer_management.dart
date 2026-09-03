@@ -55,23 +55,65 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
     },
   ];
 
+  int selectedCustomerFilter = 0;
+  final ScrollController _customerFilterScrollController = ScrollController();
+
+  final List<String> customerFilters = [
+    "All Customers",
+    "Active",
+    "Inactive",
+    "High Value",
+  ];
+
   @override
   void dispose() {
     _searchController.dispose();
+    _customerFilterScrollController.dispose();
     super.dispose();
+  }
+
+  int _getCustomerFilterCount(int index) {
+    switch (index) {
+      case 0:
+        return customers.length;
+      case 1:
+        return customers.where((c) => c["status"] == "Active").length;
+      case 2:
+        return customers.where((c) => c["status"] == "Inactive").length;
+      case 3:
+        return customers.where((c) {
+          final spentVal = int.tryParse(
+            c["spent"].toString().replaceAll(RegExp(r'[^0-9]'), ''),
+          ) ?? 0;
+          return spentVal > 20000;
+        }).length;
+      default:
+        return 0;
+    }
   }
 
   List<Map<String, dynamic>> get filteredCustomers {
     final query = _searchController.text.trim().toLowerCase();
 
-    if (query.isEmpty) {
-      return customers;
-    }
-
     return customers.where((customer) {
-      return customer["name"].toString().toLowerCase().contains(query) ||
+      final matchesSearch = query.isEmpty ||
+          customer["name"].toString().toLowerCase().contains(query) ||
           customer["email"].toString().toLowerCase().contains(query) ||
           customer["phone"].toString().toLowerCase().contains(query);
+
+      bool matchesFilter = true;
+      if (selectedCustomerFilter == 1) {
+        matchesFilter = customer["status"] == "Active";
+      } else if (selectedCustomerFilter == 2) {
+        matchesFilter = customer["status"] == "Inactive";
+      } else if (selectedCustomerFilter == 3) {
+        final spentVal = int.tryParse(
+          customer["spent"].toString().replaceAll(RegExp(r'[^0-9]'), ''),
+        ) ?? 0;
+        matchesFilter = spentVal > 20000;
+      }
+
+      return matchesSearch && matchesFilter;
     }).toList();
   }
 
@@ -85,27 +127,147 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
           _buildTitle(),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(13, 15, 13, 25),
+              padding: const EdgeInsets.only(top: 15, bottom: 25),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSearch(),
-
-                  const SizedBox(height: 18),
-
-                  _buildCustomerSummary(),
-
-                  const SizedBox(height: 18),
-
-                  ...filteredCustomers.map(
-                    (customer) => _buildCustomerCard(customer),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                    child: _buildSearch(),
                   ),
 
-                  if (filteredCustomers.isEmpty) _buildEmptyState(),
+                  const SizedBox(height: 14),
+
+                  _buildCustomerFilters(),
+
+                  const SizedBox(height: 16),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                    child: Column(
+                      children: [
+                        _buildCustomerSummary(),
+
+                        const SizedBox(height: 18),
+
+                        ...filteredCustomers.map(
+                          (customer) => _buildCustomerCard(customer),
+                        ),
+
+                        if (filteredCustomers.isEmpty) _buildEmptyState(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerFilters() {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        controller: _customerFilterScrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        itemCount: customerFilters.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final selected = selectedCustomerFilter == index;
+          final count = _getCustomerFilterCount(index);
+
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: () {
+                setState(() {
+                  selectedCustomerFilter = index;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? const Color(0xFF704522)
+                      : const Color(0xFFE8E8E8),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0xFF704522)
+                        : const Color(0xFFD0D0D0),
+                    width: selected ? 1.5 : 1,
+                  ),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF704522).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      customerFilters[index],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: selected
+                            ? Colors.white
+                            : const Color(0xFF333333),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : const Color(0xFFD4D4D4),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        "$count",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: selected
+                              ? Colors.white
+                              : const Color(0xFF555555),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

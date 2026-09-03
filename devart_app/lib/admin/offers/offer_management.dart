@@ -11,6 +11,18 @@ class OfferManagementScreen extends StatefulWidget {
 }
 
 class _OfferManagementScreenState extends State<OfferManagementScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _offerFilterScrollController = ScrollController();
+  int selectedOfferFilter = 0;
+
+  final List<String> offerFilters = [
+    "All Offers",
+    "Active",
+    "Expired",
+    "Percentage",
+    "Fixed",
+  ];
+
   final List<Map<String, dynamic>> offers = [
     {
       "title": "Festive Special",
@@ -42,6 +54,47 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
   ];
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    _offerFilterScrollController.dispose();
+    super.dispose();
+  }
+
+  int _getOfferCount(int index) {
+    if (index == 0) return offers.length;
+    final filter = offerFilters[index];
+    if (filter == "Active" || filter == "Expired") {
+      return offers.where((o) => o["status"] == filter).length;
+    }
+    if (filter == "Percentage" || filter == "Fixed") {
+      return offers.where((o) => o["type"] == filter).length;
+    }
+    return 0;
+  }
+
+  List<Map<String, dynamic>> get filteredOffers {
+    final search = _searchController.text.trim().toLowerCase();
+    return offers.where((offer) {
+      final matchesSearch = search.isEmpty ||
+          offer["title"].toString().toLowerCase().contains(search) ||
+          offer["code"].toString().toLowerCase().contains(search);
+
+      bool matchesFilter = true;
+      if (selectedOfferFilter == 1) {
+        matchesFilter = offer["status"] == "Active";
+      } else if (selectedOfferFilter == 2) {
+        matchesFilter = offer["status"] == "Expired";
+      } else if (selectedOfferFilter == 3) {
+        matchesFilter = offer["type"] == "Percentage";
+      } else if (selectedOfferFilter == 4) {
+        matchesFilter = offer["type"] == "Fixed";
+      }
+
+      return matchesSearch && matchesFilter;
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AdminShell(
       selectedIndex: 3,
@@ -50,17 +103,142 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
           _buildTitle(),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(13, 15, 13, 25),
+              padding: const EdgeInsets.only(top: 15, bottom: 25),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTopSection(),
-                  const SizedBox(height: 18),
-                  ...offers.map((offer) => _buildOfferCard(context, offer)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                    child: _buildTopSection(),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  _buildOfferFilters(),
+
+                  const SizedBox(height: 16),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                    child: Column(
+                      children: [
+                        ...filteredOffers.map(
+                          (offer) => _buildOfferCard(context, offer),
+                        ),
+                        if (filteredOffers.isEmpty) _buildEmptyState(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOfferFilters() {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        controller: _offerFilterScrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        itemCount: offerFilters.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final selected = selectedOfferFilter == index;
+          final count = _getOfferCount(index);
+
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: () {
+                setState(() {
+                  selectedOfferFilter = index;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? const Color(0xFF704522)
+                      : const Color(0xFFE8E8E8),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0xFF704522)
+                        : const Color(0xFFD0D0D0),
+                    width: selected ? 1.5 : 1,
+                  ),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF704522).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      offerFilters[index],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: selected
+                            ? Colors.white
+                            : const Color(0xFF333333),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : const Color(0xFFD4D4D4),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        "$count",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: selected
+                              ? Colors.white
+                              : const Color(0xFF555555),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -112,16 +290,32 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
               color: const Color(0xFFE1E1E1),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.search, size: 24),
-                SizedBox(width: 8),
+                const Icon(Icons.search, size: 24),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    "Search offers...",
-                    style: TextStyle(color: Colors.black54, fontSize: 13),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (_) {
+                      setState(() {});
+                    },
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Search offers...",
+                      hintStyle: TextStyle(color: Colors.black54, fontSize: 13),
+                      contentPadding: EdgeInsets.only(bottom: 6),
+                    ),
                   ),
                 ),
+                if (_searchController.text.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.clear, size: 18, color: Colors.black54),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {});
+                    },
+                  ),
               ],
             ),
           ),
@@ -154,8 +348,36 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     );
   }
 
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 70),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.local_offer_outlined,
+            size: 65,
+            color: Colors.black38,
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            "No Offers Found",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: "serif",
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Try changing your search or filter.",
+            style: TextStyle(color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildOfferCard(BuildContext context, Map<String, dynamic> offer) {
-    final bool active = offer["status"] == "Active";
 
     return Container(
       width: double.infinity,

@@ -66,10 +66,19 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     },
   ];
 
+  final ScrollController _statusScrollController = ScrollController();
+
   @override
   void dispose() {
     _searchController.dispose();
+    _statusScrollController.dispose();
     super.dispose();
+  }
+
+  int _getStatusOrderCount(int index) {
+    if (index == 0) return orders.length;
+    final statusName = statuses[index];
+    return orders.where((o) => o["status"] == statusName).length;
   }
 
   List<Map<String, dynamic>> get filteredOrders {
@@ -97,10 +106,14 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(13, 15, 13, 25),
+              padding: const EdgeInsets.only(top: 15, bottom: 25),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSearch(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: _buildSearch(),
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -108,11 +121,17 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
                   const SizedBox(height: 15),
 
-                  ...filteredOrders.map(
-                    (order) => _buildOrderCard(context, order),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Column(
+                      children: [
+                        ...filteredOrders.map(
+                          (order) => _buildOrderCard(context, order),
+                        ),
+                        if (filteredOrders.isEmpty) _buildEmptyState(),
+                      ],
+                    ),
                   ),
-
-                  if (filteredOrders.isEmpty) _buildEmptyState(),
                 ],
               ),
             ),
@@ -165,38 +184,100 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
   Widget _buildStatusFilters() {
     return SizedBox(
-      height: 42,
+      height: 44,
       child: ListView.separated(
+        controller: _statusScrollController,
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         itemCount: statuses.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 7),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final selected = selectedStatus == index;
+          final count = _getStatusOrderCount(index);
 
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedStatus = index;
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0xFF704522)
-                    : const Color(0xFFE2E2E2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: selected ? const Color(0xFF704522) : Colors.black26,
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: () {
+                setState(() {
+                  selectedStatus = index;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
                 ),
-              ),
-              child: Text(
-                statuses[index],
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: selected ? Colors.white : Colors.black,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? const Color(0xFF704522)
+                      : const Color(0xFFE8E8E8),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0xFF704522)
+                        : const Color(0xFFD0D0D0),
+                    width: selected ? 1.5 : 1,
+                  ),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF704522).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      statuses[index],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: selected
+                            ? Colors.white
+                            : const Color(0xFF333333),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : const Color(0xFFD4D4D4),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        "$count",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: selected
+                              ? Colors.white
+                              : const Color(0xFF555555),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

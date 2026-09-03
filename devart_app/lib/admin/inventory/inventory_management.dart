@@ -15,6 +15,7 @@ class InventoryManagementScreen extends StatefulWidget {
 
 class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _categoryScrollController = ScrollController();
   final ProductService _productService = ProductService();
 
   int selectedCategory = 0;
@@ -37,6 +38,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _categoryScrollController.dispose();
     super.dispose();
   }
 
@@ -162,56 +164,63 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(10, 18, 10, 100),
+                  padding: const EdgeInsets.only(top: 18, bottom: 100),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSearchBox(),
-                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: _buildSearchBox(),
+                      ),
+                      const SizedBox(height: 12),
                       _buildCategoryList(),
                       const SizedBox(height: 14),
-                      StreamBuilder<List<ProductModel>>(
-                        stream: _productService.getProductsStream(
-                          category: selectedCategoryName,
-                          searchQuery: _searchController.text,
-                        ),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Padding(
-                              padding: EdgeInsets.only(top: 80),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFF704522),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: StreamBuilder<List<ProductModel>>(
+                          stream: _productService.getProductsStream(
+                            category: selectedCategoryName,
+                            searchQuery: _searchController.text,
+                          ),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Padding(
+                                padding: EdgeInsets.only(top: 80),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF704522),
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-
-                          if (snapshot.hasError) {
-                            return _buildErrorState(snapshot.error.toString());
-                          }
-
-                          final products = snapshot.data ?? [];
-
-                          if (products.isEmpty) {
-                            return _buildEmptyState(
-                              category: selectedCategoryName,
-                              searchQuery: _searchController.text.trim(),
-                            );
-                          }
-
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: products.length,
-                            itemBuilder: (context, index) {
-                              return _buildProductCard(
-                                context,
-                                products[index],
                               );
-                            },
-                          );
-                        },
+                            }
+
+                            if (snapshot.hasError) {
+                              return _buildErrorState(snapshot.error.toString());
+                            }
+
+                            final products = snapshot.data ?? [];
+
+                            if (products.isEmpty) {
+                              return _buildEmptyState(
+                                category: selectedCategoryName,
+                                searchQuery: _searchController.text.trim(),
+                              );
+                            }
+
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: products.length,
+                              itemBuilder: (context, index) {
+                                return _buildProductCard(
+                                  context,
+                                  products[index],
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -288,43 +297,70 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
 
   Widget _buildCategoryList() {
     return SizedBox(
-      height: 43,
+      height: 44,
       child: ListView.separated(
+        controller: _categoryScrollController,
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 7),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final selected = selectedCategory == index;
 
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedCategory = index;
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0xFF704522)
-                    : const Color(0xFFE1E1E1),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: () {
+                setState(() {
+                  selectedCategory = index;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? const Color(0xFF704522)
+                      : const Color(0xFFE8E8E8),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0xFF704522)
+                        : const Color(0xFFD0D0D0),
+                    width: selected ? 1.5 : 1,
                   ),
-                ],
-              ),
-              child: Text(
-                categories[index],
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: selected ? Colors.white : Colors.black87,
-                  fontFamily: "serif",
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF704522).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 3,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                ),
+                child: Text(
+                  categories[index],
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: selected ? Colors.white : const Color(0xFF333333),
+                    fontFamily: "serif",
+                  ),
                 ),
               ),
             ),

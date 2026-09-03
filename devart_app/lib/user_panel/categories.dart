@@ -96,7 +96,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       height: 65,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final isSelected = selectedCategory == index;
