@@ -43,7 +43,7 @@ class OrdersScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       _buildHistoryOrder(
-                        status: "PROCESSING",
+                        status: "CONFIRMED",
                         date: "Oct 12, 2025",
                       ),
                     ],
