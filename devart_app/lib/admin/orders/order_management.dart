@@ -18,7 +18,6 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   final List<String> statuses = [
     "All",
     "Pending",
-    "Confirmed",
     "Shipped",
     "Delivered",
     "Cancelled",
@@ -32,6 +31,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       "items": "3 Items",
       "amount": "₹2,499",
       "status": "Pending",
+      "paymentStatus": "Paid",
     },
     {
       "id": "#DV1002",
@@ -39,7 +39,8 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       "date": "22 Aug 2026",
       "items": "2 Items",
       "amount": "₹1,899",
-      "status": "Confirmed",
+      "status": "Pending",
+      "paymentStatus": "Paid",
     },
     {
       "id": "#DV1003",
@@ -48,6 +49,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       "items": "4 Items",
       "amount": "₹3,799",
       "status": "Shipped",
+      "paymentStatus": "Paid",
     },
     {
       "id": "#DV1004",
@@ -56,6 +58,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       "items": "1 Item",
       "amount": "₹899",
       "status": "Delivered",
+      "paymentStatus": "Paid",
     },
     {
       "id": "#DV1005",
@@ -64,6 +67,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       "items": "5 Items",
       "amount": "₹4,299",
       "status": "Cancelled",
+      "paymentStatus": "Refunded",
     },
   ];
 
@@ -325,6 +329,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                         orders.indexWhere((o) => o["id"] == updated["id"]);
                     if (idx != -1) {
                       orders[idx]["status"] = updated["status"];
+                      orders[idx]["paymentStatus"] = updated["paymentStatus"] ?? orders[idx]["paymentStatus"];
                     }
                   });
                 }
@@ -374,11 +379,6 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       case "Pending":
         background = const Color(0xFFFFE5B5);
         foreground = const Color(0xFF9A6200);
-        break;
-
-      case "Confirmed":
-        background = const Color(0xFFD0E8FF);
-        foreground = const Color(0xFF1565C0);
         break;
 
       case "Shipped":

@@ -19,14 +19,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     {"name": "Handmade Toran", "quantity": 1, "price": "₹699"},
   ];
 
-  final List<String> availableStatuses = [
-    "Pending",
-    "Confirmed",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -34,10 +26,24 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     status = _order["status"] ?? "Pending";
   }
 
+  List<String> get _availableDropdownStatuses {
+    if (status == "Delivered") {
+      return ["Delivered", "Cancelled"];
+    } else if (status == "Cancelled") {
+      return ["Cancelled"];
+    }
+    return ["Pending", "Shipped", "Delivered", "Cancelled"];
+  }
+
   void _updateStatus(String value) {
     setState(() {
       status = value;
       _order["status"] = value;
+      if (value == "Delivered") {
+        _order["paymentStatus"] = "Paid";
+      } else if (value == "Cancelled") {
+        _order["paymentStatus"] = "Refunded";
+      }
     });
 
     showDialog(
@@ -352,6 +358,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Widget _buildSummary() {
+    final isDelivered = status == "Delivered";
+    final isCancelled = status == "Cancelled";
+
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
@@ -368,6 +377,49 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           _summaryRow("Discount", "-₹0"),
           const Divider(height: 22),
           _summaryRow("Total", _order["amount"] ?? "₹2,499", bold: true),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDelivered
+                  ? const Color(0xFFD8F0D8)
+                  : (isCancelled
+                      ? const Color(0xFFFFEAEA)
+                      : const Color(0xFFF5E9E5)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Payment Status",
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDelivered
+                        ? const Color(0xFF2E7D32)
+                        : (isCancelled ? Colors.red : const Color(0xFF704522)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    isDelivered
+                        ? "PAID"
+                        : (isCancelled
+                            ? "REFUNDED"
+                            : (_order["paymentStatus"] ?? "PAID")),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -396,6 +448,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Widget _buildStatusDropdown() {
+    final dropdownItems = _availableDropdownStatuses;
+
     return Container(
       height: 53,
       padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -406,12 +460,18 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: availableStatuses.contains(status) ? status : "Pending",
+          value: dropdownItems.contains(status) ? status : dropdownItems.first,
           isExpanded: true,
-          items: availableStatuses.map((st) {
+          items: dropdownItems.map((st) {
             return DropdownMenuItem<String>(
               value: st,
-              child: Text(st),
+              child: Text(
+                st,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: st == "Cancelled" ? Colors.red : Colors.black87,
+                ),
+              ),
             );
           }).toList(),
           onChanged: (value) {
@@ -432,11 +492,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       case "Pending":
         background = const Color(0xFFFFE5B5);
         foreground = const Color(0xFF9A6200);
-        break;
-
-      case "Confirmed":
-        background = const Color(0xFFD0E8FF);
-        foreground = const Color(0xFF1565C0);
         break;
 
       case "Shipped":
