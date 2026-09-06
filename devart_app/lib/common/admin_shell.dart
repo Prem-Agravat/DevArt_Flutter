@@ -4,6 +4,7 @@ import 'package:devart/admin/orders/order_management.dart';
 import 'package:devart/admin/inventory/inventory_management.dart';
 import 'package:devart/admin/offers/offer_management.dart';
 import 'package:devart/admin/customers/customer_management.dart';
+import 'package:devart/admin/profile/admin_profile.dart';
 
 class AdminShell extends StatelessWidget {
   final Widget child;
@@ -97,24 +98,55 @@ class AdminShell extends StatelessWidget {
                 _openCustomers(context);
               },
               child: Padding(
-                padding: const EdgeInsets.only(right: 18),
+                padding: const EdgeInsets.only(right: 12),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       isCustomerPage ? Icons.people : Icons.people_alt_outlined,
-                      size: 30,
+                      size: 26,
                       color: isCustomerPage ? Colors.black : Colors.black54,
                     ),
-
                     const SizedBox(height: 2),
-
                     Text(
                       "Customers",
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: isCustomerPage ? Colors.black : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AdminProfileScreen(),
+                  ),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.account_circle_outlined,
+                      size: 26,
+                      color: Colors.black54,
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      "Profile",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
                       ),
                     ),
                   ],
@@ -135,7 +167,7 @@ class AdminShell extends StatelessWidget {
           ),
 
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.15)),
+            child: Container(color: Colors.white.withValues(alpha: 0.15)),
           ),
 
           SafeArea(child: child),
