@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
 import 'package:devart/admin/offers/add_offer.dart';
 import 'package:devart/admin/offers/edit_offer.dart';
+import 'package:devart/models/offer_model.dart';
+import 'package:devart/services/offer_service.dart';
 
 class OfferManagementScreen extends StatefulWidget {
   const OfferManagementScreen({super.key});
@@ -13,6 +15,8 @@ class OfferManagementScreen extends StatefulWidget {
 class _OfferManagementScreenState extends State<OfferManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _offerFilterScrollController = ScrollController();
+  final OfferService _offerService = OfferService();
+
   int selectedOfferFilter = 0;
 
   final List<String> offerFilters = [
@@ -23,35 +27,11 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     "Fixed",
   ];
 
-  final List<Map<String, dynamic>> offers = [
-    {
-      "title": "Festive Special",
-      "code": "FESTIVE20",
-      "discount": "20%",
-      "type": "Percentage",
-      "validFrom": "20 Aug 2026",
-      "validUntil": "30 Aug 2026",
-      "status": "Active",
-    },
-    {
-      "title": "New User Offer",
-      "code": "WELCOME10",
-      "discount": "10%",
-      "type": "Percentage",
-      "validFrom": "01 Aug 2026",
-      "validUntil": "31 Dec 2026",
-      "status": "Active",
-    },
-    {
-      "title": "Flat ₹500 Off",
-      "code": "FLAT500",
-      "discount": "₹500",
-      "type": "Fixed",
-      "validFrom": "01 Aug 2026",
-      "validUntil": "25 Aug 2026",
-      "status": "Expired",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _offerService.seedInitialOffersIfEmpty();
+  }
 
   @override
   void dispose() {
@@ -60,80 +40,284 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     super.dispose();
   }
 
-  int _getOfferCount(int index) {
-    if (index == 0) return offers.length;
-    final filter = offerFilters[index];
-    if (filter == "Active" || filter == "Expired") {
-      return offers.where((o) => o["status"] == filter).length;
-    }
-    if (filter == "Percentage" || filter == "Fixed") {
-      return offers.where((o) => o["type"] == filter).length;
-    }
-    return 0;
-  }
-
-  List<Map<String, dynamic>> get filteredOffers {
-    final search = _searchController.text.trim().toLowerCase();
-    return offers.where((offer) {
-      final matchesSearch = search.isEmpty ||
-          offer["title"].toString().toLowerCase().contains(search) ||
-          offer["code"].toString().toLowerCase().contains(search);
-
-      bool matchesFilter = true;
-      if (selectedOfferFilter == 1) {
-        matchesFilter = offer["status"] == "Active";
-      } else if (selectedOfferFilter == 2) {
-        matchesFilter = offer["status"] == "Expired";
-      } else if (selectedOfferFilter == 3) {
-        matchesFilter = offer["type"] == "Percentage";
-      } else if (selectedOfferFilter == 4) {
-        matchesFilter = offer["type"] == "Fixed";
-      }
-
-      return matchesSearch && matchesFilter;
-    }).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AdminShell(
-      selectedIndex: 3,
-      child: Column(
-        children: [
-          _buildTitle(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 15, bottom: 25),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+  void _confirmDelete(BuildContext context, OfferModel offer) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(25, 25, 25, 18),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircleAvatar(
+                radius: 30,
+                backgroundColor: Color(0xFFFFD8D8),
+                child: Icon(Icons.delete_outline, size: 35, color: Colors.red),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                "Delete Offer?",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Are you sure you want to delete\n\"${offer.title}\"?",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 22),
+              Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 13),
-                    child: _buildTopSection(),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  _buildOfferFilters(),
-
-                  const SizedBox(height: 16),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 13),
-                    child: Column(
-                      children: [
-                        ...filteredOffers.map(
-                          (offer) => _buildOfferCard(context, offer),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black54,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        if (filteredOffers.isEmpty) _buildEmptyState(),
-                      ],
+                      ),
+                      child: const Text("Cancel"),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(dialogContext);
+                        try {
+                          await _offerService.deleteOffer(offer.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Offer deleted successfully."),
+                                backgroundColor: Color(0xFF704522),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Failed to delete offer: $e"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Delete",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedFilterName = offerFilters[selectedOfferFilter];
+    final canPop = Navigator.canPop(context);
+
+    return AdminShell(
+      selectedIndex: 3,
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              _buildTitle(canPop),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(top: 18, bottom: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: _buildSearchBox(),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildOfferFilters(),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: StreamBuilder<List<OfferModel>>(
+                          stream: _offerService.getOffersStream(
+                            filter: selectedFilterName,
+                            searchQuery: _searchController.text,
+                          ),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Padding(
+                                padding: EdgeInsets.only(top: 80),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF704522),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            if (snapshot.hasError) {
+                              return _buildErrorState(
+                                snapshot.error.toString(),
+                              );
+                            }
+
+                            final offers = snapshot.data ?? [];
+
+                            if (offers.isEmpty) {
+                              return _buildEmptyState(
+                                filter: selectedFilterName,
+                                searchQuery: _searchController.text.trim(),
+                              );
+                            }
+
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: offers.length,
+                              itemBuilder: (context, index) {
+                                return _buildOfferCard(
+                                  context,
+                                  offers[index],
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Sticky Bottom "Add Offer" Button matching Inventory design
+          Positioned(
+            right: 20,
+            bottom: 25,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AddOfferScreen(),
+                  ),
+                );
+              },
+              child: Container(
+                width: 58,
+                height: 58,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF704522),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add, color: Colors.white, size: 35),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTitle(bool canPop) {
+    return Container(
+      height: 59,
+      width: double.infinity,
+      color: const Color(0xFFF5E9E5),
+      child: Row(
+        children: [
+          if (canPop)
+            IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(
+                Icons.arrow_back_ios_new,
+                size: 24,
+                color: Colors.black,
+              ),
+            )
+          else
+            const SizedBox(width: 20),
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Offer Management",
+                style: TextStyle(
+                  fontSize: 31,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB56F6F),
+                  fontFamily: "serif",
+                ),
+              ),
+            ),
+          ),
+          if (canPop) const SizedBox(width: 48) else const SizedBox(width: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBox() {
+    return Container(
+      height: 45,
+      decoration: BoxDecoration(
+        color: const Color(0xFFD8D8D8),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          prefixIcon: const Icon(Icons.search, size: 26, color: Colors.black),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 20, color: Colors.black54),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                )
+              : null,
+          hintText: "Search offers by title or promo code...",
+          hintStyle: const TextStyle(
+            color: Colors.black54,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          contentPadding: const EdgeInsets.only(top: 10),
+        ),
       ),
     );
   }
@@ -147,12 +331,11 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: offerFilters.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final selected = selectedOfferFilter == index;
-          final count = _getOfferCount(index);
 
           return Material(
             color: Colors.transparent,
@@ -166,7 +349,7 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                  horizontal: 18,
                   vertical: 10,
                 ),
                 alignment: Alignment.center,
@@ -197,43 +380,14 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                           ),
                         ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      offerFilters[index],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF333333),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? Colors.white.withValues(alpha: 0.25)
-                            : const Color(0xFFD4D4D4),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        "$count",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: selected
-                              ? Colors.white
-                              : const Color(0xFF555555),
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  offerFilters[index],
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: selected ? Colors.white : const Color(0xFF333333),
+                    fontFamily: "serif",
+                  ),
                 ),
               ),
             ),
@@ -243,168 +397,40 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     );
   }
 
-  Widget _buildTitle() {
-    return Container(
-      height: 59,
-      width: double.infinity,
-      color: const Color(0xFFF5E9E5),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              size: 25,
-              color: Colors.black,
-            ),
-          ),
-          const Expanded(
-            child: Center(
-              child: Text(
-                "Offer Management",
-                style: TextStyle(
-                  fontSize: 31,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFB56F6F),
-                  fontFamily: "serif",
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 48),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopSection() {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE1E1E1),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, size: 24),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (_) {
-                      setState(() {});
-                    },
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "Search offers...",
-                      hintStyle: TextStyle(color: Colors.black54, fontSize: 13),
-                      contentPadding: EdgeInsets.only(bottom: 6),
-                    ),
-                  ),
-                ),
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear, size: 18, color: Colors.black54),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {});
-                    },
-                  ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        SizedBox(
-          height: 48,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddOfferScreen()),
-              );
-            },
-            icon: const Icon(Icons.add, size: 21),
-            label: const Text(
-              "Add Offer",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF704522),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 70),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.local_offer_outlined,
-            size: 65,
-            color: Colors.black38,
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            "No Offers Found",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontFamily: "serif",
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            "Try changing your search or filter.",
-            style: TextStyle(color: Colors.black54),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOfferCard(BuildContext context, Map<String, dynamic> offer) {
+  Widget _buildOfferCard(BuildContext context, OfferModel offer) {
+    final bool isExpired = offer.isExpired;
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 15),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFE2E2E2),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.black54),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 3)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   color: const Color(0xFFD0E3FF),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: const Icon(
                   Icons.local_offer_outlined,
-                  size: 29,
+                  size: 28,
                   color: Color(0xFF704522),
                 ),
               ),
@@ -414,7 +440,7 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      offer["title"],
+                      offer.title,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -432,46 +458,56 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        offer["code"],
+                        offer.code,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF704522),
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              _buildStatus(offer["status"]),
+              _buildStatusBadge(isExpired ? "Expired" : offer.status),
             ],
           ),
 
-          const SizedBox(height: 15),
+          if (offer.description != null && offer.description!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              offer.description!,
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
+            ),
+          ],
 
+          const SizedBox(height: 12),
           const Divider(height: 1, color: Colors.black26),
-
-          const SizedBox(height: 13),
+          const SizedBox(height: 12),
 
           Row(
             children: [
               Expanded(
                 child: _infoItem(
-                  Icons.discount_outlined,
+                  offer.discountType == "Fixed"
+                      ? Icons.currency_rupee
+                      : Icons.percent,
                   "Discount",
-                  offer["discount"],
+                  offer.formattedDiscount,
                 ),
               ),
               Expanded(
                 child: _infoItem(
                   Icons.category_outlined,
                   "Type",
-                  offer["type"],
+                  offer.discountType == "Fixed" ? "Fixed Amount" : "Percentage",
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           Row(
             children: [
@@ -479,20 +515,29 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                 child: _infoItem(
                   Icons.calendar_today_outlined,
                   "Valid From",
-                  offer["validFrom"],
+                  offer.formattedValidFrom,
                 ),
               ),
               Expanded(
                 child: _infoItem(
                   Icons.event_outlined,
                   "Valid Until",
-                  offer["validUntil"],
+                  offer.formattedValidUntil,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 15),
+          if (offer.minSpend != null && offer.minSpend! > 0) ...[
+            const SizedBox(height: 10),
+            _infoItem(
+              Icons.shopping_bag_outlined,
+              "Min Spend",
+              "₹${offer.minSpend! % 1 == 0 ? offer.minSpend!.toInt() : offer.minSpend!}",
+            ),
+          ],
+
+          const SizedBox(height: 14),
 
           Row(
             children: [
@@ -506,7 +551,7 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.edit_outlined, size: 19),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
                   label: const Text(
                     "Edit",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -523,12 +568,10 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    _deleteOffer(context, offer);
-                  },
+                  onPressed: () => _confirmDelete(context, offer),
                   icon: const Icon(
                     Icons.delete_outline,
-                    size: 19,
+                    size: 18,
                     color: Colors.red,
                   ),
                   label: const Text(
@@ -556,7 +599,7 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
   Widget _infoItem(IconData icon, String title, String value) {
     return Row(
       children: [
-        Icon(icon, size: 19, color: const Color(0xFF704522)),
+        Icon(icon, size: 18, color: const Color(0xFF704522)),
         const SizedBox(width: 7),
         Expanded(
           child: Column(
@@ -566,7 +609,7 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                 title,
                 style: const TextStyle(fontSize: 10, color: Colors.black54),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 value,
                 overflow: TextOverflow.ellipsis,
@@ -582,11 +625,11 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     );
   }
 
-  Widget _buildStatus(String status) {
+  Widget _buildStatusBadge(String status) {
     final bool active = status == "Active";
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: active ? const Color(0xFFD8F0D8) : const Color(0xFFFFD8D8),
         borderRadius: BorderRadius.circular(15),
@@ -602,136 +645,117 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     );
   }
 
-  void _deleteOffer(BuildContext context, Map<String, dynamic> offer) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-          contentPadding: const EdgeInsets.fromLTRB(25, 25, 25, 18),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircleAvatar(
-                radius: 30,
-                backgroundColor: Color(0xFFFFD8D8),
-                child: Icon(Icons.delete_outline, size: 35, color: Colors.red),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                "Delete Offer?",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Are you sure you want to delete ${offer["title"]}?",
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 22),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          offers.remove(offer);
-                        });
+  Widget _buildEmptyState({
+    required String filter,
+    required String searchQuery,
+  }) {
+    String title = "No Offers Found";
+    String subtitle = "Add your first offer by tapping the + button below.";
 
-                        Navigator.pop(dialogContext);
+    if (searchQuery.isNotEmpty && filter != "All Offers") {
+      title = "No Matching Offers";
+      subtitle =
+          "No offers matching \"$searchQuery\" in \"$filter\" filter.";
+    } else if (searchQuery.isNotEmpty) {
+      title = "No Results Found";
+      subtitle = "No offers match \"$searchQuery\". Try another search term.";
+    } else if (filter != "All Offers") {
+      title = "Empty Filter";
+      subtitle = "No offers found under \"$filter\".";
+    }
 
-                        _showSuccess(
-                          "Offer Deleted!",
-                          "The offer has been successfully deleted.",
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text("Delete"),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
+      child: Column(
+        children: [
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5E9E5),
+              borderRadius: BorderRadius.circular(35),
+            ),
+            child: const Icon(
+              Icons.local_offer_outlined,
+              size: 38,
+              color: Color(0xFF704522),
+            ),
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: "serif",
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.black54, fontSize: 13),
+          ),
+          const SizedBox(height: 20),
+          if (filter != "All Offers" || searchQuery.isNotEmpty)
+            OutlinedButton.icon(
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  selectedOfferFilter = 0; // reset to "All Offers"
+                });
+              },
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text("Show All Offers"),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF704522),
+                side: const BorderSide(color: Color(0xFF704522)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  void _showSuccess(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+  Widget _buildErrorState(String error) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            size: 55,
+            color: Colors.redAccent,
           ),
-          contentPadding: const EdgeInsets.fromLTRB(25, 25, 25, 15),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircleAvatar(
-                radius: 30,
-                backgroundColor: Color(0xFFC9E0FF),
-                child: Icon(
-                  Icons.check_circle_outline,
-                  size: 38,
-                  color: Color(0xFF496B8D),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA06D42),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    "Done",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 14),
+          const Text(
+            "Unable to load offers",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        );
-      },
+          const SizedBox(height: 6),
+          const Text(
+            "Please check your internet connection or try again.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => setState(() {}),
+            icon: const Icon(Icons.refresh),
+            label: const Text("Retry"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF704522),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
