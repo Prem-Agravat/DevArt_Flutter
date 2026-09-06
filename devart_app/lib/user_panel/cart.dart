@@ -1,4 +1,3 @@
-import 'package:devart/admin/offers/offer_management.dart';
 import 'package:devart/common/app_shell.dart';
 import 'package:devart/user_panel/coupons.dart';
 import 'package:devart/user_panel/dashboard.dart';
