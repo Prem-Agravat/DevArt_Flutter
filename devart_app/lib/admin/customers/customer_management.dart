@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:devart/common/admin_shell.dart';
 import 'package:devart/models/customer_model.dart';
+import 'package:devart/services/customer_service.dart';
 
 class CustomerManagementScreen extends StatefulWidget {
   const CustomerManagementScreen({super.key});
@@ -13,108 +13,18 @@ class CustomerManagementScreen extends StatefulWidget {
 
 class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final CustomerService _customerService = CustomerService();
 
-  final List<CustomerModel> _defaultCustomers = [
-    CustomerModel(
-      id: "cust_1",
-      name: "Dev Chauhan",
-      email: "devchauhan@gmail.com",
-      phone: "+91 98765 43210",
-      orders: 12,
-      spent: "₹18,499",
-    ),
-    CustomerModel(
-      id: "cust_2",
-      name: "Rahul Patel",
-      email: "rahulpatel@gmail.com",
-      phone: "+91 98765 12345",
-      orders: 8,
-      spent: "₹12,799",
-    ),
-    CustomerModel(
-      id: "cust_3",
-      name: "Priya Shah",
-      email: "priyashah@gmail.com",
-      phone: "+91 98765 67890",
-      orders: 15,
-      spent: "₹24,899",
-    ),
-    CustomerModel(
-      id: "cust_4",
-      name: "Amit Joshi",
-      email: "amitjoshi@gmail.com",
-      phone: "+91 98765 24680",
-      orders: 3,
-      spent: "₹4,299",
-    ),
-    CustomerModel(
-      id: "cust_5",
-      name: "Neha Mehta",
-      email: "nehamehta@gmail.com",
-      phone: "+91 98765 13579",
-      orders: 21,
-      spent: "₹31,599",
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _customerService.seedInitialCustomersIfEmpty();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  Stream<List<CustomerModel>> _getCustomersStream() {
-    return FirebaseFirestore.instance
-        .collection('users')
-        .snapshots()
-        .map((snapshot) {
-      final List<CustomerModel> firestoreUsers = [];
-
-      for (final doc in snapshot.docs) {
-        final data = doc.data();
-        final role = data['role']?.toString().toLowerCase().trim() ?? 'user';
-        if (role == 'admin') continue; // Don't show admins in customer list
-
-        final name = data['name']?.toString() ?? 'User';
-        final email = data['email']?.toString() ?? '';
-        final phone = data['phone']?.toString() ?? 'N/A';
-
-        firestoreUsers.add(
-          CustomerModel(
-            id: doc.id,
-            name: name,
-            email: email,
-            phone: phone,
-            orders: (data['orders'] is num)
-                ? (data['orders'] as num).toInt()
-                : 1,
-            spent: data['spent']?.toString() ?? '₹899',
-          ),
-        );
-      }
-
-      // Merge Firestore users with default customers (avoiding duplicates by email)
-      final List<CustomerModel> combined = List.from(firestoreUsers);
-      for (final def in _defaultCustomers) {
-        if (!combined.any((c) =>
-            c.email.toLowerCase().trim() == def.email.toLowerCase().trim())) {
-          combined.add(def);
-        }
-      }
-
-      return combined;
-    });
-  }
-
-  List<CustomerModel> _filterCustomers(List<CustomerModel> list) {
-    final query = _searchController.text.trim().toLowerCase();
-    if (query.isEmpty) return list;
-
-    return list.where((customer) {
-      return customer.name.toLowerCase().contains(query) ||
-          customer.email.toLowerCase().contains(query) ||
-          customer.phone.toLowerCase().contains(query);
-    }).toList();
   }
 
   @override
@@ -127,10 +37,22 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
           _buildTitle(),
           Expanded(
             child: StreamBuilder<List<CustomerModel>>(
-              stream: _getCustomersStream(),
+              stream: _customerService.getCustomersStream(
+                searchQuery: _searchController.text,
+              ),
               builder: (context, snapshot) {
-                final allCustomers = snapshot.data ?? _defaultCustomers;
-                final filtered = _filterCustomers(allCustomers);
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 80),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF704522),
+                      ),
+                    ),
+                  );
+                }
+
+                final customers = snapshot.data ?? [];
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.only(top: 16, bottom: 35),
@@ -146,7 +68,7 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
 
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: _buildCustomerSummary(allCustomers.length),
+                        child: _buildCustomerSummary(customers.length),
                       ),
 
                       const SizedBox(height: 16),
@@ -155,10 +77,10 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: Column(
                           children: [
-                            ...filtered.map(
+                            ...customers.map(
                               (customer) => _buildCustomerCard(customer),
                             ),
-                            if (filtered.isEmpty) _buildEmptyState(),
+                            if (customers.isEmpty) _buildEmptyState(),
                           ],
                         ),
                       ),
