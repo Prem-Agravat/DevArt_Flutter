@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:devart/common/admin_shell.dart';
+import 'package:devart/models/offer_model.dart';
+import 'package:devart/services/offer_service.dart';
 
 class AddOfferScreen extends StatefulWidget {
   const AddOfferScreen({super.key});
@@ -10,30 +12,163 @@ class AddOfferScreen extends StatefulWidget {
 
 class _AddOfferScreenState extends State<AddOfferScreen> {
   final _formKey = GlobalKey<FormState>();
+  final OfferService _offerService = OfferService();
 
-  final titleController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _discountController = TextEditingController();
+  final TextEditingController _minSpendController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
-  final codeController = TextEditingController();
-
-  final discountController = TextEditingController();
-
-  String discountType = "Percentage";
+  String _discountType = "Percentage"; // "Percentage" or "Fixed"
+  String _status = "Active"; // "Active" or "Expired"
+  DateTime _validFrom = DateTime.now();
+  DateTime _validUntil = DateTime.now().add(const Duration(days: 30));
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    titleController.dispose();
-    codeController.dispose();
-    discountController.dispose();
+    _titleController.dispose();
+    _codeController.dispose();
+    _discountController.dispose();
+    _minSpendController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
-  void _saveOffer() {
+  Future<void> _pickValidFromDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _validFrom,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF704522),
+              onPrimary: Colors.white,
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _validFrom = picked;
+        if (_validUntil.isBefore(_validFrom)) {
+          _validUntil = _validFrom.add(const Duration(days: 7));
+        }
+      });
+    }
+  }
+
+  Future<void> _pickValidUntilDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _validUntil.isBefore(_validFrom) ? _validFrom : _validUntil,
+      firstDate: _validFrom,
+      lastDate: DateTime(2035),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF704522),
+              onPrimary: Colors.white,
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _validUntil = picked;
+      });
+    }
+  }
+
+  Future<void> _saveOffer() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    final discountVal = double.tryParse(_discountController.text.trim()) ?? 0.0;
+    if (_discountType == "Percentage" && (discountVal <= 0 || discountVal > 100)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Percentage discount must be between 1% and 100%"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_discountType == "Fixed" && discountVal <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Fixed discount must be greater than ₹0"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final double? minSpendVal = _minSpendController.text.trim().isNotEmpty
+        ? double.tryParse(_minSpendController.text.trim())
+        : null;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final newOffer = OfferModel(
+        id: '',
+        title: _titleController.text.trim(),
+        code: _codeController.text.trim().toUpperCase(),
+        discount: discountVal,
+        discountType: _discountType,
+        validFrom: _validFrom,
+        validUntil: _validUntil,
+        status: _status,
+        description: _descriptionController.text.trim(),
+        minSpend: minSpendVal,
+        createdAt: DateTime.now(),
+      );
+
+      await _offerService.addOffer(newOffer);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      _showSuccessDialog();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to save offer: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showSuccessDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
@@ -59,7 +194,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "The offer has been successfully created.",
+                "The offer has been successfully saved to database.",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.black54),
               ),
@@ -94,15 +229,16 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isPercentage = _discountType == "Percentage";
+
     return AdminShell(
       selectedIndex: 3,
       child: Column(
         children: [
           _buildTitle(),
-
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(13, 18, 13, 25),
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -110,23 +246,43 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                   children: [
                     _buildLabel("Offer Title"),
                     _buildTextField(
-                      titleController,
-                      "e.g. Festive Special",
-                      Icons.local_offer_outlined,
+                      controller: _titleController,
+                      hint: "e.g. Festive Special",
+                      icon: Icons.local_offer_outlined,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Please enter offer title";
+                        }
+                        if (value.trim().length < 3) {
+                          return "Title must be at least 3 characters";
+                        }
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 18),
 
                     _buildLabel("Promo Code"),
                     _buildTextField(
-                      codeController,
-                      "e.g. FESTIVE20",
-                      Icons.confirmation_number_outlined,
+                      controller: _codeController,
+                      hint: "e.g. FESTIVE20",
+                      icon: Icons.confirmation_number_outlined,
+                      textCapitalization: TextCapitalization.characters,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Please enter promo code";
+                        }
+                        if (value.trim().length < 3) {
+                          return "Code must be at least 3 characters";
+                        }
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 18),
 
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Column(
@@ -137,17 +293,47 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel("Discount"),
-                              _buildTextField(
-                                discountController,
-                                "20",
-                                Icons.percent,
-                                keyboardType: TextInputType.number,
+                              _buildLabel(
+                                isPercentage ? "Discount (%)" : "Discount (₹)",
+                              ),
+                              _buildDiscountField(isPercentage),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("Valid From"),
+                              _buildDateSelector(
+                                date: _validFrom,
+                                onTap: _pickValidFromDate,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("Valid Until"),
+                              _buildDateSelector(
+                                date: _validUntil,
+                                onTap: _pickValidUntilDate,
                               ),
                             ],
                           ),
@@ -158,40 +344,65 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                     const SizedBox(height: 18),
 
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel("Valid From"),
-                              _dateField("20 Aug 2026"),
+                              _buildLabel("Min Spend (₹) (Optional)"),
+                              _buildTextField(
+                                controller: _minSpendController,
+                                hint: "e.g. 999",
+                                icon: Icons.currency_rupee,
+                                keyboardType: TextInputType.number,
+                              ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel("Valid Until"),
-                              _dateField("30 Aug 2026"),
+                              _buildLabel("Initial Status"),
+                              _buildStatusDropdown(),
                             ],
                           ),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 18),
+
+                    _buildLabel("Description (Optional)"),
+                    _buildTextField(
+                      controller: _descriptionController,
+                      hint: "e.g. Flat 20% off on all terracotta pottery items",
+                      icon: Icons.description_outlined,
+                      maxLines: 2,
+                    ),
+
+                    const SizedBox(height: 28),
 
                     SizedBox(
                       width: double.infinity,
-                      height: 55,
+                      height: 54,
                       child: ElevatedButton.icon(
-                        onPressed: _saveOffer,
-                        icon: const Icon(Icons.check_circle_outline),
-                        label: const Text(
-                          "Save Offer",
-                          style: TextStyle(
+                        onPressed: _isLoading ? null : _saveOffer,
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.check_circle_outline),
+                        label: Text(
+                          _isLoading ? "Saving Offer..." : "Save Offer",
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -199,6 +410,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF704522),
                           foregroundColor: Colors.white,
+                          elevation: 3,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
@@ -228,7 +440,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
             },
             icon: const Icon(
               Icons.arrow_back_ios_new,
-              size: 25,
+              size: 24,
               color: Colors.black,
             ),
           ),
@@ -253,31 +465,37 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
 
   Widget _buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 7, bottom: 6),
+      padding: const EdgeInsets.only(left: 4, bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String hint,
-    IconData icon, {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
     TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    int maxLines = 1,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: Icon(icon),
+        hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+        prefixIcon: Icon(icon, color: const Color(0xFF704522), size: 22),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
-          vertical: 15,
+          vertical: 14,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -287,12 +505,69 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFA06D42), width: 2),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget _buildDiscountField(bool isPercentage) {
+    return TextFormField(
+      controller: _discountController,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        hintText: isPercentage ? "20" : "500",
+        hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+        prefixIcon: isPercentage
+            ? const Icon(Icons.percent, color: Color(0xFF704522), size: 22)
+            : const Icon(Icons.currency_rupee, color: Color(0xFF704522), size: 22),
+        suffixText: isPercentage ? "%" : "₹",
+        suffixStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: Color(0xFF704522),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFD8BBA9)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFA06D42), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
       ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return "Required";
+          return "Enter discount";
         }
-
+        final parsed = double.tryParse(value.trim());
+        if (parsed == null || parsed <= 0) {
+          return "Invalid amount";
+        }
+        if (isPercentage && parsed > 100) {
+          return "Max 100%";
+        }
         return null;
       },
     );
@@ -301,7 +576,7 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
   Widget _buildDropdown() {
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -309,37 +584,126 @@ class _AddOfferScreenState extends State<AddOfferScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: discountType,
+          value: _discountType,
           isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF704522)),
           items: const [
-            DropdownMenuItem(value: "Percentage", child: Text("Percentage")),
-            DropdownMenuItem(value: "Fixed", child: Text("Fixed Amount")),
+            DropdownMenuItem(
+              value: "Percentage",
+              child: Row(
+                children: [
+                  Icon(Icons.percent, size: 18, color: Color(0xFF704522)),
+                  SizedBox(width: 8),
+                  Text("Percentage (%)"),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: "Fixed",
+              child: Row(
+                children: [
+                  Icon(Icons.currency_rupee, size: 18, color: Color(0xFF704522)),
+                  SizedBox(width: 8),
+                  Text("Fixed Amount (₹)"),
+                ],
+              ),
+            ),
           ],
           onChanged: (value) {
-            setState(() {
-              discountType = value!;
-            });
+            if (value != null) {
+              setState(() {
+                _discountType = value;
+              });
+            }
           },
         ),
       ),
     );
   }
 
-  Widget _dateField(String text) {
+  Widget _buildStatusDropdown() {
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 13),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFD8BBA9)),
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.calendar_today_outlined, size: 20),
-          const SizedBox(width: 9),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 12))),
-        ],
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _status,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF704522)),
+          items: const [
+            DropdownMenuItem(
+              value: "Active",
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, size: 16, color: Colors.green),
+                  SizedBox(width: 8),
+                  Text("Active"),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: "Expired",
+              child: Row(
+                children: [
+                  Icon(Icons.cancel, size: 16, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text("Expired"),
+                ],
+              ),
+            ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _status = value;
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateSelector({
+    required DateTime date,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFD8BBA9)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.calendar_today_outlined,
+              size: 18,
+              color: Color(0xFF704522),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                OfferModel.formatDate(date),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
