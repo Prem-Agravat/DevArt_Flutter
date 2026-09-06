@@ -423,7 +423,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,7 +455,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +490,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,11 +645,11 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF704522), size: 22),
+        prefixIcon: Icon(icon, color: const Color(0xFF704522), size: 20),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
+          horizontal: 12,
           vertical: 14,
         ),
         enabledBorder: OutlineInputBorder(
@@ -681,18 +681,18 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
         hintText: isPercentage ? "20" : "500",
         hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
         prefixIcon: isPercentage
-            ? const Icon(Icons.percent, color: Color(0xFF704522), size: 22)
-            : const Icon(Icons.currency_rupee, color: Color(0xFF704522), size: 22),
+            ? const Icon(Icons.percent, color: Color(0xFF704522), size: 19)
+            : const Icon(Icons.currency_rupee, color: Color(0xFF704522), size: 19),
         suffixText: isPercentage ? "%" : "₹",
         suffixStyle: const TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 16,
+          fontSize: 15,
           color: Color(0xFF704522),
         ),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
+          horizontal: 10,
           vertical: 14,
         ),
         enabledBorder: OutlineInputBorder(
@@ -718,7 +718,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
         }
         final parsed = double.tryParse(value.trim());
         if (parsed == null || parsed <= 0) {
-          return "Invalid amount";
+          return "Invalid";
         }
         if (isPercentage && parsed > 100) {
           return "Max 100%";
@@ -731,7 +731,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
   Widget _buildDropdown() {
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -741,25 +741,41 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
         child: DropdownButton<String>(
           value: _discountType,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF704522)),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF704522), size: 20),
           items: const [
             DropdownMenuItem(
               value: "Percentage",
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.percent, size: 18, color: Color(0xFF704522)),
-                  SizedBox(width: 8),
-                  Text("Percentage (%)"),
+                  Icon(Icons.percent, size: 16, color: Color(0xFF704522)),
+                  SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      "Percentage",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 ],
               ),
             ),
             DropdownMenuItem(
               value: "Fixed",
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.currency_rupee, size: 18, color: Color(0xFF704522)),
-                  SizedBox(width: 8),
-                  Text("Fixed Amount (₹)"),
+                  Icon(Icons.currency_rupee, size: 16, color: Color(0xFF704522)),
+                  SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      "Fixed (₹)",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -779,7 +795,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
   Widget _buildStatusDropdown() {
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -789,25 +805,41 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
         child: DropdownButton<String>(
           value: _status,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF704522)),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF704522), size: 20),
           items: const [
             DropdownMenuItem(
               value: "Active",
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle, size: 16, color: Colors.green),
-                  SizedBox(width: 8),
-                  Text("Active"),
+                  Icon(Icons.check_circle, size: 15, color: Colors.green),
+                  SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      "Active",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 ],
               ),
             ),
             DropdownMenuItem(
               value: "Expired",
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.cancel, size: 16, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text("Expired"),
+                  Icon(Icons.cancel, size: 15, color: Colors.red),
+                  SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      "Expired",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -833,7 +865,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
       borderRadius: BorderRadius.circular(14),
       child: Container(
         height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -843,15 +875,17 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
           children: [
             const Icon(
               Icons.calendar_today_outlined,
-              size: 18,
+              size: 16,
               color: Color(0xFF704522),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
               child: Text(
                 OfferModel.formatDate(date),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),

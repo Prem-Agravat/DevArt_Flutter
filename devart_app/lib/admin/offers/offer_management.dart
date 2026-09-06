@@ -40,6 +40,27 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
     super.dispose();
   }
 
+  Future<void> _deleteOffer(OfferModel offer) async {
+    try {
+      await _offerService.deleteOffer(offer.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Offer deleted successfully."),
+          backgroundColor: Color(0xFF704522),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to delete offer: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   void _confirmDelete(BuildContext context, OfferModel offer) {
     showDialog(
       context: context,
@@ -88,28 +109,9 @@ class _OfferManagementScreenState extends State<OfferManagementScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () async {
+                      onPressed: () {
                         Navigator.pop(dialogContext);
-                        try {
-                          await _offerService.deleteOffer(offer.id);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Offer deleted successfully."),
-                                backgroundColor: Color(0xFF704522),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Failed to delete offer: $e"),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
+                        _deleteOffer(offer);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
