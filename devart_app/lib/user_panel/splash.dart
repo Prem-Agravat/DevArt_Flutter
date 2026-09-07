@@ -16,7 +16,7 @@ class SplashScreen extends StatelessWidget {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.20)),
+            child: Container(color: Colors.white.withValues(alpha: 0.20)),
           ),
           Center(
             child: Column(

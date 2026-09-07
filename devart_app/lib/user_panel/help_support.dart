@@ -149,7 +149,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFF0EAE6)),
       ),

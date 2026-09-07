@@ -90,7 +90,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       Container(
                         padding: const EdgeInsets.fromLTRB(24, 25, 24, 25),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.94),
+                          color: Colors.white.withValues(alpha: 0.94),
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: Column(

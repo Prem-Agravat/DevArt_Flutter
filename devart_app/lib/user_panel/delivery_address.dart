@@ -189,7 +189,7 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
         width: double.infinity,
         height: 122,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.65),
+          color: Colors.white.withValues(alpha: 0.65),
           borderRadius: BorderRadius.circular(35),
           border: Border.all(color: const Color(0xFFD7BFAF), width: 3),
         ),

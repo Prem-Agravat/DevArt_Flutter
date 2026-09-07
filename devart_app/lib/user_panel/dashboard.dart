@@ -11,7 +11,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final int _selectedIndex = 0;
   final Set<int> _wishlisted = {};
 
   final List<_Product> _products = List.generate(
@@ -23,11 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
       originalPrice: 1099,
       image: "lib/assets/images/devart_product_1.webp",
     ),
-  );
-
-  final List<String> _categoryImages = List.generate(
-    4,
-    (index) => "lib/assets/images/devart_product_1.webp",
   );
 
   @override
@@ -48,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Positioned.fill(
-              child: Container(color: Colors.white.withOpacity(0.35)),
+              child: Container(color: Colors.white.withValues(alpha: 0.35)),
             ),
             Column(
               children: [
@@ -137,11 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.80),
+        color: Colors.white.withValues(alpha: 0.80),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 7,
             offset: const Offset(0, 3),
           ),
@@ -194,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
               border: Border.all(color: Colors.black, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 3,
                   offset: const Offset(2, 3),
                 ),
@@ -238,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.18),
+                color: Colors.black.withValues(alpha: 0.18),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),

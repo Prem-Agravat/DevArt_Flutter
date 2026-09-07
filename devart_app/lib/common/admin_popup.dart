@@ -20,7 +20,7 @@ class AdminPopup {
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8C5C38).withOpacity(0.5),
+                  color: const Color(0xFF8C5C38).withValues(alpha: 0.5),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
@@ -129,7 +129,7 @@ class AdminPopup {
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8C5C38).withOpacity(0.5),
+                  color: const Color(0xFF8C5C38).withValues(alpha: 0.5),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),

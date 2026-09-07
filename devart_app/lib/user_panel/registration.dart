@@ -168,7 +168,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
 
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.20)),
+            child: Container(color: Colors.white.withValues(alpha: 0.20)),
           ),
 
           Positioned(
@@ -179,7 +179,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(30, 35, 30, 25),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.80),
+                color: Colors.white.withValues(alpha: 0.80),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(40),
                 ),

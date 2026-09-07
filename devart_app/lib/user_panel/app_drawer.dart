@@ -33,6 +33,7 @@ class AppDrawer extends StatelessWidget {
     }
 
     Future.delayed(const Duration(milliseconds: 200), () {
+      if (!context.mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => page),

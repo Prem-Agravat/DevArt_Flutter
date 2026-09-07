@@ -351,7 +351,7 @@ class _CartScreenState extends State<CartScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.18),
+                color: Colors.black.withValues(alpha: 0.18),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),
@@ -444,7 +444,7 @@ class _CartItem {
   final int price;
   final int oldPrice;
   final String image;
-  int quantity;
+  int quantity = 1;
 
   _CartItem({
     required this.name,

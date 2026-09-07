@@ -161,7 +161,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           ),
 
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.20)),
+            child: Container(color: Colors.white.withValues(alpha: 0.20)),
           ),
 
           Positioned(
@@ -172,7 +172,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 35),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.85),
+                color: Colors.white.withValues(alpha: 0.85),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(40),
                 ),

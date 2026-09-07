@@ -109,7 +109,7 @@ class AppShell extends StatelessWidget {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.10)),
+            child: Container(color: Colors.white.withValues(alpha: 0.10)),
           ),
           child,
         ],

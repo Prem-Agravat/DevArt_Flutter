@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.20)),
+            child: Container(color: Colors.white.withValues(alpha: 0.20)),
           ),
           Positioned(
             left: 0,
@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(30, 30, 30, 25),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.80),
+                color: Colors.white.withValues(alpha: 0.80),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(40),
                 ),

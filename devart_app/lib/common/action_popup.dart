@@ -21,7 +21,7 @@ Future<void> showSuccessPopup(
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFA06D42).withOpacity(0.45),
+                color: const Color(0xFFA06D42).withValues(alpha: 0.45),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
