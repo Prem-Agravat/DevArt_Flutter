@@ -452,6 +452,5 @@ class _CartItem {
     required this.price,
     required this.oldPrice,
     required this.image,
-    this.quantity = 1,
   });
 }

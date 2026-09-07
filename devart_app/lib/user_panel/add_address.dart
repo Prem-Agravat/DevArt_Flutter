@@ -211,7 +211,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
-                              value: selectedState,
+                              initialValue: selectedState,
                               decoration: _inputDecoration(
                                 hint: "Select State",
                                 icon: Icons.map_outlined,

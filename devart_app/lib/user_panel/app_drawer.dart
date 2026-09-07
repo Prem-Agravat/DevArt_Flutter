@@ -6,7 +6,6 @@ import 'package:devart/user_panel/categories.dart';
 import 'package:devart/user_panel/orders.dart';
 import 'package:devart/user_panel/profile.dart';
 import 'package:devart/user_panel/wishlist.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:devart/services/auth_service.dart';
 
 class AppDrawer extends StatelessWidget {
