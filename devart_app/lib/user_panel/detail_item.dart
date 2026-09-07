@@ -1,11 +1,17 @@
+import 'package:devart/models/product_model.dart';
 import 'package:devart/user_panel/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/common/app_shell.dart';
 
 class DetailItemScreen extends StatefulWidget {
-  final Map<String, dynamic> product;
+  final Map<String, dynamic>? product;
+  final ProductModel? productModel;
 
-  const DetailItemScreen({super.key, required this.product});
+  const DetailItemScreen({
+    super.key,
+    this.product,
+    this.productModel,
+  }) : assert(product != null || productModel != null, "Either product or productModel must be provided");
 
   @override
   State<DetailItemScreen> createState() => _DetailItemScreenState();
@@ -16,17 +22,54 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
   int quantity = 1;
   String? selectedSize;
 
+  Widget _buildImageWidget(String imagePath) {
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          "lib/assets/images/devart_product_1.webp",
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        "lib/assets/images/devart_product_1.webp",
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final product = widget.product;
+    final name = widget.productModel?.name ?? widget.product?["name"]?.toString() ?? "Detail-Item";
+    final priceStr = widget.productModel != null
+        ? "₹${widget.productModel!.price.toStringAsFixed(widget.productModel!.price % 1 == 0 ? 0 : 2)}"
+        : (widget.product?["price"]?.toString() ?? "₹0");
+    final oldPriceStr = widget.productModel != null
+        ? (widget.productModel!.oldPrice != null
+            ? "₹${widget.productModel!.oldPrice!.toStringAsFixed(widget.productModel!.oldPrice! % 1 == 0 ? 0 : 2)}"
+            : "")
+        : (widget.product?["oldPrice"]?.toString() ?? "");
+    final singleImage = widget.productModel?.image ??
+        widget.product?["image"]?.toString() ??
+        "lib/assets/images/devart_product_1.webp";
 
-    final List<String> images = product["images"] != null
-        ? List<String>.from(product["images"])
-        : [product["image"]];
+    final List<String> images = widget.product?["images"] != null
+        ? List<String>.from(widget.product!["images"])
+        : [singleImage];
 
-    final List<String> sizes = product["sizes"] != null
-        ? List<String>.from(product["sizes"])
-        : ["16×16"];
+    final List<String> sizes = widget.product?["sizes"] != null
+        ? List<String>.from(widget.product!["sizes"])
+        : ["16×16", "18×18", "20×20"];
+
+    final rating = widget.product?["rating"]?.toString() ?? "4.5";
+    final reviews = widget.product?["reviews"]?.toString() ?? "109";
+    final description = widget.productModel?.description ?? widget.product?["description"]?.toString() ?? "";
+    final isOutOfStock = widget.productModel != null && widget.productModel!.stock <= 0;
 
     return AppShell(
       selectedIndex: 1,
@@ -41,7 +84,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
           ),
           Column(
             children: [
-              _buildTitle(product["name"]),
+              _buildTitle(name),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.only(bottom: 95),
@@ -49,14 +92,23 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildImages(images),
-                      _buildProductInfo(product, sizes),
+                      _buildProductInfo(
+                        name: name,
+                        price: priceStr,
+                        oldPrice: oldPriceStr,
+                        rating: rating,
+                        reviews: reviews,
+                        sizes: sizes,
+                        description: description,
+                        isOutOfStock: isOutOfStock,
+                      ),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          _buildAddToCart(),
+          _buildAddToCart(isOutOfStock),
         ],
       ),
     );
@@ -81,6 +133,8 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
   }
 
   Widget _buildImages(List<String> images) {
+    final validIndex = selectedImage < images.length ? selectedImage : 0;
+
     return SizedBox(
       height: 310,
       child: Padding(
@@ -102,10 +156,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: Image.asset(
-                        images[selectedImage],
-                        fit: BoxFit.cover,
-                      ),
+                      child: _buildImageWidget(images[validIndex]),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -118,7 +169,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 3),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: selectedImage == index
+                          color: validIndex == index
                               ? Colors.grey
                               : Colors.grey.shade400,
                         ),
@@ -149,14 +200,14 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: selectedImage == index
+                            color: validIndex == index
                                 ? const Color(0xFFA06D42)
                                 : const Color(0xFFD8C8A5),
-                            width: selectedImage == index ? 2 : 1,
+                            width: validIndex == index ? 2 : 1,
                           ),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Image.asset(images[index], fit: BoxFit.cover),
+                        child: _buildImageWidget(images[index]),
                       ),
                     ),
                   );
@@ -169,7 +220,16 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
     );
   }
 
-  Widget _buildProductInfo(Map<String, dynamic> product, List<String> sizes) {
+  Widget _buildProductInfo({
+    required String name,
+    required String price,
+    required String oldPrice,
+    required String rating,
+    required String reviews,
+    required List<String> sizes,
+    required String description,
+    required bool isOutOfStock,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
       child: Column(
@@ -180,7 +240,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
             children: [
               Expanded(
                 child: Text(
-                  product["name"],
+                  name,
                   style: const TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
@@ -189,26 +249,28 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
                 ),
               ),
               Text(
-                product["price"],
+                price,
                 style: const TextStyle(
                   fontSize: 31,
                   fontWeight: FontWeight.bold,
                   fontFamily: "serif",
                 ),
               ),
-              const SizedBox(width: 4),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  product["oldPrice"],
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.lineThrough,
+              if (oldPrice.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    oldPrice,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.lineThrough,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 3),
@@ -221,14 +283,43 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
               const Icon(Icons.star_border, size: 18, color: Colors.black),
               const SizedBox(width: 8),
               Text(
-                "${product["rating"]} (${product["reviews"]} Reviews)",
+                "$rating ($reviews Reviews)",
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              if (isOutOfStock) ...[
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "Out of Stock",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF555555),
+                height: 1.4,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           const Text(
             "Size",
@@ -238,7 +329,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
           Wrap(
             spacing: 8,
             children: sizes.map((size) {
-              final selected = selectedSize == size;
+              final selected = (selectedSize ?? sizes.first) == size;
 
               return GestureDetector(
                 onTap: () {
@@ -337,7 +428,7 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
     );
   }
 
-  Widget _buildAddToCart() {
+  Widget _buildAddToCart(bool isOutOfStock) {
     return Positioned(
       left: 60,
       right: 60,
@@ -345,20 +436,24 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
       child: SizedBox(
         height: 50,
         child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CartScreen()),
-            );
-          },
+          onPressed: isOutOfStock
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                },
           icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
-          label: const Text(
-            "Add To Cart",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          label: Text(
+            isOutOfStock ? "Out of Stock" : "Add To Cart",
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFA06D42),
             foregroundColor: Colors.white,
+            disabledBackgroundColor: Colors.grey.shade400,
+            disabledForegroundColor: Colors.white70,
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
