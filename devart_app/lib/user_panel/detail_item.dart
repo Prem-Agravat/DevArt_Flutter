@@ -1,4 +1,5 @@
 import 'package:devart/models/product_model.dart';
+import 'package:devart/services/cart_service.dart';
 import 'package:devart/user_panel/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/common/app_shell.dart';
@@ -439,6 +440,43 @@ class _DetailItemScreenState extends State<DetailItemScreen> {
           onPressed: isOutOfStock
               ? null
               : () {
+                  final model = widget.productModel ??
+                      ProductModel(
+                        id: widget.product?["name"]?.toString().toLowerCase().replaceAll(" ", "_") ?? "item_${DateTime.now().millisecondsSinceEpoch}",
+                        name: widget.product?["name"]?.toString() ?? "Product",
+                        category: widget.product?["category"]?.toString() ?? "Handicrafts",
+                        price: double.tryParse(widget.product?["price"]?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? "899") ?? 899.0,
+                        oldPrice: double.tryParse(widget.product?["oldPrice"]?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? ""),
+                        stock: 10,
+                        description: widget.product?["description"]?.toString() ?? "",
+                        image: widget.product?["image"]?.toString() ?? "lib/assets/images/devart_product_1.webp",
+                      );
+
+                  CartService().addItem(
+                    model,
+                    quantity: quantity,
+                    size: selectedSize ?? "16×16",
+                  );
+
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("${model.name} added to cart!"),
+                      backgroundColor: const Color(0xFFA06D42),
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: "VIEW CART",
+                        textColor: Colors.white,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const CartScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const CartScreen()),
