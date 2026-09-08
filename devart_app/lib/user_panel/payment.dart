@@ -1,9 +1,17 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/models/order_model.dart';
+import 'package:devart/services/cart_service.dart';
+import 'package:devart/services/order_service.dart';
 import 'package:devart/user_panel/confirm_order.dart';
 import 'package:flutter/material.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
+  final String? selectedAddress;
+
+  const PaymentScreen({
+    super.key,
+    this.selectedAddress,
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -11,9 +19,90 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   int selectedPayment = 0;
+  final CartService _cartService = CartService();
+
+  String _monthName(int month) {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ];
+    return months[month - 1];
+  }
+
+  void _processPayment() {
+    final addressText = widget.selectedAddress ??
+        "Alex Rivers, 124 Artisans Lane, Studio 4B, Brooklyn, NY 11201";
+    final orderId = "#DVT-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}";
+    final now = DateTime.now();
+    final dateStr = "${now.day} ${_monthName(now.month)} ${now.year}";
+
+    final items = _cartService.items.isNotEmpty
+        ? _cartService.items
+            .map((i) => OrderItemModel(
+                  name: "${i.name} (${i.size})",
+                  quantity: i.quantity,
+                  price: i.price,
+                  image: i.image,
+                ))
+            .toList()
+        : [
+            OrderItemModel(
+              name: "IndigoGeometry (16×16)",
+              quantity: 1,
+              price: 899.0,
+              image: "lib/assets/images/devart_product_1.webp",
+            ),
+          ];
+
+    final paymentMethodStr = selectedPayment == 0
+        ? "Credit/Debit Card"
+        : (selectedPayment == 1 ? "UPI / NetBanking" : "Cash on Delivery");
+
+    final newOrder = OrderModel(
+      id: '',
+      orderId: orderId,
+      customer: "Alex Rivers",
+      email: "alex.rivers@example.com",
+      phone: "+91 98765 43210",
+      address: addressText,
+      date: dateStr,
+      items: items,
+      deliveryFee: _cartService.shipping,
+      discount: _cartService.discount,
+      status: "Pending",
+      paymentMethod: paymentMethodStr,
+      paymentStatus: selectedPayment == 2 ? "Pending (COD)" : "Paid",
+      createdAt: now,
+    );
+
+    try {
+      OrderService().createOrder(newOrder);
+    } catch (_) {}
+
+    _cartService.clearCart();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConfirmOrderScreen(order: newOrder),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final totalAmount = _cartService.total > 0 ? _cartService.total : 870.0;
+
     return AppShell(
       selectedIndex: 0,
       selectedDrawerItem: "Payment",
@@ -56,14 +145,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       width: 280,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ConfirmOrderScreen(),
-                            ),
-                          );
-                        },
+                        onPressed: _processPayment,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFA06D42),
                           foregroundColor: Colors.white,
@@ -71,9 +153,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                        child: const Text(
-                          "Pay ₹870  →",
-                          style: TextStyle(
+                        child: Text(
+                          "Pay ₹${totalAmount.toStringAsFixed(totalAmount % 1 == 0 ? 0 : 2)}  →",
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
@@ -200,6 +282,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildOrderTotal() {
+    final itemsCount = _cartService.itemCount > 0 ? _cartService.itemCount : 1;
+    final subtotal = _cartService.subtotal > 0 ? _cartService.subtotal : 899.0;
+    final discount = _cartService.discount > 0 ? _cartService.discount : 29.0;
+    final shipping = _cartService.shipping;
+    final total = _cartService.total > 0 ? _cartService.total : 870.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,11 +322,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
           child: Column(
             children: [
-              _summaryRow("2 Item", "₹899.00"),
-              _summaryRow("Discount", "-₹29.00", color: Colors.red),
-              _summaryRow("Delivery", "Free"),
+              _summaryRow(
+                "$itemsCount ${itemsCount == 1 ? 'Item' : 'Items'}",
+                "₹${subtotal.toStringAsFixed(2)}",
+              ),
+              if (discount > 0)
+                _summaryRow(
+                  "Discount",
+                  "-₹${discount.toStringAsFixed(2)}",
+                  color: Colors.red,
+                ),
+              _summaryRow(
+                "Delivery",
+                shipping == 0 ? "Free" : "₹${shipping.toStringAsFixed(2)}",
+              ),
               const Divider(),
-              _summaryRow("Total", "₹870.00", large: true, color: Colors.green),
+              _summaryRow(
+                "Total",
+                "₹${total.toStringAsFixed(2)}",
+                large: true,
+                color: Colors.green,
+              ),
             ],
           ),
         ),
