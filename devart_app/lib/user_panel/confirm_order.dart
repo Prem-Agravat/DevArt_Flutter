@@ -1,9 +1,12 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/models/order_model.dart';
 import 'package:devart/user_panel/dashboard.dart';
 import 'package:flutter/material.dart';
 
 class ConfirmOrderScreen extends StatelessWidget {
-  const ConfirmOrderScreen({super.key});
+  final OrderModel? order;
+
+  const ConfirmOrderScreen({super.key, this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +42,8 @@ class ConfirmOrderScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     const Text(
-                      "Thank you for supporting.",
+                      "Thank you for supporting authentic artisans.",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -56,11 +60,12 @@ class ConfirmOrderScreen extends StatelessWidget {
                             height: 50,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.push(
+                                Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => const HomeScreen(),
                                   ),
+                                  (route) => false,
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -81,11 +86,12 @@ class ConfirmOrderScreen extends StatelessWidget {
                             height: 50,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.push(
+                                Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => const HomeScreen(),
                                   ),
+                                  (route) => false,
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -120,7 +126,11 @@ class ConfirmOrderScreen extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
             },
             icon: const Icon(Icons.arrow_back_ios_new, size: 22),
           ),
@@ -144,6 +154,14 @@ class ConfirmOrderScreen extends StatelessWidget {
   }
 
   Widget _buildOrderDetails() {
+    final orderId = order?.orderId ?? "#DVT-2026-7841";
+    final amountPaid = order != null
+        ? "₹${order!.totalAmount.toStringAsFixed(2)}"
+        : "₹870.00";
+    final addressText = order?.address ??
+        "Alex Rivers, 124 Artisans Lane,\nStudio 4B, Brooklyn,\nNY 11201";
+    final statusText = order?.status ?? "Processing";
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -161,15 +179,15 @@ class ConfirmOrderScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _detailRow("Order Status", "Processing", status: true),
+          _detailRow("Order Status", statusText, status: true),
           const Divider(color: Colors.black),
-          _detailRow("Order ID", "#DVT-2026-7841"),
-          _detailRow("Amount Paid", "₹870.00", green: true),
-          _detailRow("Delivery Date", "Estimated Nov 14\nStandard Shipping"),
+          _detailRow("Order ID", orderId),
+          _detailRow("Amount Paid", amountPaid, green: true),
           _detailRow(
-            "Shipping Address",
-            "Alex Rivers, 124 Artisans\nLane,\nStudio 4B, Brooklyn,\nNY 11201",
+            "Delivery Date",
+            "Estimated 4-5 Days\nStandard Shipping",
           ),
+          _detailRow("Shipping Address", addressText),
         ],
       ),
     );
@@ -210,9 +228,9 @@ class ConfirmOrderScreen extends StatelessWidget {
                         color: const Color(0xFFBBD9FF),
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      child: const Text(
-                        "Processing",
-                        style: TextStyle(
+                      child: Text(
+                        value,
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
