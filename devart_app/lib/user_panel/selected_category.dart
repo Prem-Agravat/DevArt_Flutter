@@ -1,6 +1,9 @@
 import 'package:devart/common/app_shell.dart';
 import 'package:devart/models/product_model.dart';
+import 'package:devart/services/cart_service.dart';
 import 'package:devart/services/product_service.dart';
+import 'package:devart/services/wishlist_service.dart';
+import 'package:devart/user_panel/cart.dart';
 import 'package:devart/user_panel/detail_item.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +18,8 @@ class SelectedCategoryScreen extends StatefulWidget {
 
 class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
   final ProductService _productService = ProductService();
+
+  final WishlistService _wishlistService = WishlistService();
 
   final Map<String, String> categoryDescriptions = {
     "All": "Explore our complete collection of premium\nhandcrafted home decor products.",
@@ -108,51 +113,56 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
     final description = categoryDescriptions[widget.category] ??
         "Explore our premium collection of handcrafted artisan creations.";
 
-    return AppShell(
-      selectedIndex: 1,
-      selectedDrawerItem: "Categories",
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              "lib/assets/images/devart_bgimg_home.png",
-              fit: BoxFit.cover,
-            ),
-          ),
-          Column(
+    return AnimatedBuilder(
+      animation: _wishlistService,
+      builder: (context, _) {
+        return AppShell(
+          selectedIndex: 1,
+          selectedDrawerItem: "Categories",
+          child: Stack(
             children: [
-              _buildTitle(),
-              _buildDescription(description),
-              Expanded(
-                child: StreamBuilder<List<ProductModel>>(
-                  stream: _productService.getProductsStream(
-                    category: widget.category,
-                  ),
-                  builder: (context, snapshot) {
-                    List<ProductModel> products = _fallbackAll;
-
-                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                      products = snapshot.data!;
-                    } else if (widget.category != "All") {
-                      final catNorm = widget.category.toLowerCase().replaceAll(" ", "");
-                      products = _fallbackAll
-                          .where((p) =>
-                              p.category.toLowerCase().replaceAll(" ", "") ==
-                              catNorm)
-                          .toList();
-                      if (products.isEmpty) {
-                        products = _fallbackAll;
-                      }
-                    }
-
-                    return _buildProductGrid(products);
-                  },
+              Positioned.fill(
+                child: Image.asset(
+                  "lib/assets/images/devart_bgimg_home.png",
+                  fit: BoxFit.cover,
                 ),
+              ),
+              Column(
+                children: [
+                  _buildTitle(),
+                  _buildDescription(description),
+                  Expanded(
+                    child: StreamBuilder<List<ProductModel>>(
+                      stream: _productService.getProductsStream(
+                        category: widget.category,
+                      ),
+                      builder: (context, snapshot) {
+                        List<ProductModel> products = _fallbackAll;
+
+                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                          products = snapshot.data!;
+                        } else if (widget.category != "All") {
+                          final catNorm = widget.category.toLowerCase().replaceAll(" ", "");
+                          products = _fallbackAll
+                              .where((p) =>
+                                  p.category.toLowerCase().replaceAll(" ", "") ==
+                                  catNorm)
+                              .toList();
+                          if (products.isEmpty) {
+                            products = _fallbackAll;
+                          }
+                        }
+
+                        return _buildProductGrid(products);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -244,6 +254,8 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
   }
 
   Widget _buildProductCard(ProductModel product) {
+    final isWishlisted = _wishlistService.isWishlisted(product.id);
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFD9D9D9),
@@ -280,7 +292,20 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
                           ),
                         ),
                       ),
-                      const Icon(Icons.favorite_border, size: 22),
+                      GestureDetector(
+                        onTap: () {
+                          _wishlistService.toggleWishlist(product);
+                        },
+                        child: Icon(
+                          isWishlisted
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          size: 22,
+                          color: isWishlisted
+                              ? const Color(0xFFB56F6F)
+                              : Colors.black,
+                        ),
+                      ),
                     ],
                   ),
                   const Row(
@@ -319,14 +344,39 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
                         ),
                       ],
                       const Spacer(),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF8CB8F2),
-                          shape: BoxShape.circle,
+                      GestureDetector(
+                        onTap: () {
+                          CartService().addItem(product);
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("${product.name} added to cart!"),
+                              backgroundColor: const Color(0xFFA06D42),
+                              duration: const Duration(seconds: 2),
+                              action: SnackBarAction(
+                                label: "VIEW CART",
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const CartScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF8CB8F2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.add, size: 19),
                         ),
-                        child: const Icon(Icons.add, size: 19),
                       ),
                     ],
                   ),

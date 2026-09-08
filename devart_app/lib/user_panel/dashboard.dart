@@ -1,6 +1,7 @@
 import 'package:devart/common/app_shell.dart';
 import 'package:devart/models/product_model.dart';
 import 'package:devart/services/product_service.dart';
+import 'package:devart/services/wishlist_service.dart';
 import 'package:devart/user_panel/detail_item.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/categories.dart';
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ProductService _productService = ProductService();
-  final Set<String> _wishlisted = {};
+  final WishlistService _wishlistService = WishlistService();
 
   final List<Map<String, String>> _categories = [
     {"name": "Cushion Covers", "image": "lib/assets/images/devart_product_1.webp"},
@@ -328,132 +329,130 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFeaturedGrid() {
-    return StreamBuilder<List<ProductModel>>(
-      stream: _productService.getProductsStream(
-        searchQuery: _searchController.text.trim(),
-      ),
-      builder: (context, snapshot) {
-        List<ProductModel> products = _fallbackProducts;
-
-        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-          products = snapshot.data!;
-        } else if (_searchController.text.trim().isNotEmpty) {
-          final q = _searchController.text.trim().toLowerCase();
-          products = _fallbackProducts
-              .where((p) =>
-                  p.name.toLowerCase().contains(q) ||
-                  p.category.toLowerCase().contains(q) ||
-                  p.description.toLowerCase().contains(q))
-              .toList();
-        }
-
-        final screenWidth = MediaQuery.of(context).size.width;
-        final cardWidth = (screenWidth - 42) / 2;
-        final cardHeight = cardWidth / 1.15 + 88;
-
-        if (products.isEmpty) {
-          return Container(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            alignment: Alignment.center,
-            child: const Text(
-              "No products found",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54,
-              ),
-            ),
-          );
-        }
-
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: products.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 18,
-            mainAxisSpacing: 14,
-            mainAxisExtent: cardHeight,
+    return AnimatedBuilder(
+      animation: _wishlistService,
+      builder: (context, _) {
+        return StreamBuilder<List<ProductModel>>(
+          stream: _productService.getProductsStream(
+            searchQuery: _searchController.text.trim(),
           ),
-          itemBuilder: (context, index) {
-            final product = products[index];
-            final productId = product.id.isNotEmpty ? product.id : "prod_$index";
-            final isWishlisted = _wishlisted.contains(productId);
+          builder: (context, snapshot) {
+            List<ProductModel> products = _fallbackProducts;
 
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DetailItemScreen(productModel: product),
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              products = snapshot.data!;
+            } else if (_searchController.text.trim().isNotEmpty) {
+              final q = _searchController.text.trim().toLowerCase();
+              products = _fallbackProducts
+                  .where((p) =>
+                      p.name.toLowerCase().contains(q) ||
+                      p.category.toLowerCase().contains(q) ||
+                      p.description.toLowerCase().contains(q))
+                  .toList();
+            }
+
+            final screenWidth = MediaQuery.of(context).size.width;
+            final cardWidth = (screenWidth - 42) / 2;
+            final cardHeight = cardWidth / 1.15 + 88;
+
+            if (products.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                alignment: Alignment.center,
+                child: const Text(
+                  "No products found",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
                   ),
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD9D9D9),
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.18),
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(18),
+              );
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: products.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 18,
+                mainAxisSpacing: 14,
+                mainAxisExtent: cardHeight,
+              ),
+              itemBuilder: (context, index) {
+                final product = products[index];
+                final isWishlisted = _wishlistService.isWishlisted(product.id);
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DetailItemScreen(productModel: product),
                       ),
-                      child: AspectRatio(
-                        aspectRatio: 1.15,
-                        child: _buildProductImage(product.image),
-                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 5, 8, 7),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(18),
+                          ),
+                          child: AspectRatio(
+                            aspectRatio: 1.15,
+                            child: _buildProductImage(product.image),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 5, 8, 7),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Text(
-                                    product.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: "serif",
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        product.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: "serif",
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        _wishlistService.toggleWishlist(product);
+                                      },
+                                      child: Icon(
+                                        isWishlisted
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        size: 23,
+                                        color: isWishlisted
+                                            ? const Color(0xFFB56F6F)
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isWishlisted) {
-                                        _wishlisted.remove(productId);
-                                      } else {
-                                        _wishlisted.add(productId);
-                                      }
-                                    });
-                                  },
-                                  child: Icon(
-                                    isWishlisted
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    size: 23,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
                             const SizedBox(height: 1),
                             const Row(
                               children: [
@@ -502,5 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  },
+);
   }
 }
