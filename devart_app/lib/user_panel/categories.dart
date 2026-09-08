@@ -1,4 +1,6 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/models/product_model.dart';
+import 'package:devart/services/product_service.dart';
 import 'package:flutter/material.dart';
 import 'package:devart/user_panel/selected_category.dart';
 
@@ -10,44 +12,72 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
+  final ProductService _productService = ProductService();
   int selectedCategory = 0;
-  int selectedBottomNav = 1;
 
   final List<String> categories = [
     "All",
-    "CushionCovers",
+    "Cushion Covers",
     "Toran",
-    "SofaCovers",
+    "Sofa Covers",
     "Bedsheet",
+    "Pottery",
+    "Handicrafts",
   ];
 
-  final List<Map<String, dynamic>> products = [
+  final List<Map<String, String>> _categoryCards = [
     {
-      "name": "CushionCovers",
-      "price": "25",
+      "name": "Cushion Covers",
+      "count": "25",
       "image": "lib/assets/images/devart_product_1.webp",
     },
     {
       "name": "Toran",
-      "price": "115",
+      "count": "15",
       "image": "lib/assets/images/devart_product_1.webp",
     },
     {
-      "name": "SofaCovers",
-      "price": "50",
+      "name": "Sofa Covers",
+      "count": "50",
       "image": "lib/assets/images/devart_product_1.webp",
     },
     {
-      "name": "HomeDecor",
-      "price": "66",
+      "name": "Pottery",
+      "count": "18",
       "image": "lib/assets/images/devart_product_1.webp",
     },
     {
-      "name": "Bedsheets",
-      "price": "18",
+      "name": "Handicrafts",
+      "count": "20",
+      "image": "lib/assets/images/devart_product_1.webp",
+    },
+    {
+      "name": "Bedsheet",
+      "count": "12",
       "image": "lib/assets/images/devart_product_1.webp",
     },
   ];
+
+  Widget _buildProductImage(String imagePath) {
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          "lib/assets/images/devart_product_1.webp",
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        "lib/assets/images/devart_product_1.webp",
+        fit: BoxFit.cover,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,33 +182,61 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Widget _buildProductGrid() {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 90),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 22,
-        mainAxisSpacing: 27,
-        childAspectRatio: 0.72,
-      ),
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        final product = products[index];
+    return StreamBuilder<List<ProductModel>>(
+      stream: _productService.getProductsStream(),
+      builder: (context, snapshot) {
+        final products = snapshot.data ?? [];
 
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    SelectedCategoryScreen(category: product["name"]),
+        // Count products dynamically per category if available
+        Map<String, int> counts = {};
+        for (final p in products) {
+          final cat = p.category.trim();
+          counts[cat] = (counts[cat] ?? 0) + 1;
+        }
+
+        final activeCategory = categories[selectedCategory];
+
+        final displayCards = activeCategory == "All"
+            ? _categoryCards
+            : _categoryCards
+                .where((c) =>
+                    c["name"]!.toLowerCase().replaceAll(" ", "") ==
+                    activeCategory.toLowerCase().replaceAll(" ", ""))
+                .toList();
+
+        final cardsToShow = displayCards.isNotEmpty ? displayCards : _categoryCards;
+
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 90),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 22,
+            mainAxisSpacing: 27,
+            childAspectRatio: 0.72,
+          ),
+          itemCount: cardsToShow.length,
+          itemBuilder: (context, index) {
+            final card = cardsToShow[index];
+            final catName = card["name"]!;
+            final liveCount = counts[catName] ?? int.tryParse(card["count"] ?? "10") ?? 10;
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SelectedCategoryScreen(category: catName),
+                  ),
+                );
+              },
+              child: _buildProductCard(
+                name: catName,
+                count: liveCount.toString(),
+                image: card["image"]!,
               ),
             );
           },
-          child: _buildProductCard(
-            name: product["name"],
-            price: product["price"],
-            image: product["image"],
-          ),
         );
       },
     );
@@ -186,7 +244,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildProductCard({
     required String name,
-    required String price,
+    required String count,
     required String image,
   }) {
     return Container(
@@ -203,11 +261,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         children: [
           Expanded(
             flex: 6,
-            child: Image.asset(
-              image,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            child: _buildProductImage(image),
           ),
           Expanded(
             flex: 4,
@@ -228,28 +282,25 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    "${price}Product",
+                    "$count Products",
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () {},
-                    child: const Row(
-                      children: [
-                        Text(
-                          "Explore",
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  const Row(
+                    children: [
+                      Text(
+                        "Explore",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
-                        SizedBox(width: 4),
-                        Icon(Icons.arrow_circle_right_outlined, size: 17),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_circle_right_outlined, size: 17),
+                    ],
                   ),
                 ],
               ),
