@@ -1,4 +1,5 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/services/cart_service.dart';
 import 'package:devart/user_panel/coupons.dart';
 import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/delivery_address.dart';
@@ -13,58 +14,14 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _promoController = TextEditingController();
+  final CartService _cartService = CartService();
 
-  final List<_CartItem> _items = [
-    _CartItem(
-      name: "IndigoGeometry",
-      category: "Handwoven-cotton",
-      price: 899,
-      oldPrice: 1099,
-      image: "lib/assets/images/devart_product_1.webp",
-    ),
-    _CartItem(
-      name: "IndigoGeometry",
-      category: "Handwoven-cotton",
-      price: 899,
-      oldPrice: 1099,
-      image: "lib/assets/images/devart_product_1.webp",
-    ),
-  ];
-
-  double get subtotal {
-    return _items.fold(0, (sum, item) => sum + item.price * item.quantity);
-  }
-
-  double get shipping {
-    return _items.isEmpty ? 0 : 36;
-  }
-
-  double get tax {
-    return subtotal * 0.05;
-  }
-
-  double get total {
-    return subtotal + shipping - 29;
-  }
-
-  void _increase(int index) {
-    setState(() {
-      _items[index].quantity++;
-    });
-  }
-
-  void _decrease(int index) {
-    setState(() {
-      if (_items[index].quantity > 1) {
-        _items[index].quantity--;
-      }
-    });
-  }
-
-  void _remove(int index) {
-    setState(() {
-      _items.removeAt(index);
-    });
+  @override
+  void initState() {
+    super.initState();
+    if (_cartService.appliedPromoCode != null) {
+      _promoController.text = _cartService.appliedPromoCode!;
+    }
   }
 
   @override
@@ -73,57 +30,99 @@ class _CartScreenState extends State<CartScreen> {
     super.dispose();
   }
 
+  Widget _buildProductImage(String imagePath) {
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return Image.network(
+        imagePath,
+        width: 97,
+        height: 97,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          "lib/assets/images/devart_product_1.webp",
+          width: 97,
+          height: 97,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Image.asset(
+      imagePath,
+      width: 97,
+      height: 97,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        "lib/assets/images/devart_product_1.webp",
+        width: 97,
+        height: 97,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      selectedIndex: 0,
-      selectedDrawerItem: "Cart",
-      showCart: true,
-      showBottomNav: true,
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            _buildTitle(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(17, 12, 17, 20),
-                child: Column(
-                  children: [
-                    ...List.generate(
-                      _items.length,
-                      (index) => _buildCartItem(index),
-                    ),
-                    const SizedBox(height: 5),
-                    _buildPromoCode(),
-                    const SizedBox(height: 12),
-                    _buildOrderSummary(),
-                    const SizedBox(height: 12),
-                    _buildCheckoutButton(),
-                    const SizedBox(height: 5),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                        );
-                      },
-                      child: const Text(
-                        "Continue Shopping",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
+    return AnimatedBuilder(
+      animation: _cartService,
+      builder: (context, _) {
+        final items = _cartService.items;
+
+        return AppShell(
+          selectedIndex: 0,
+          selectedDrawerItem: "Cart",
+          showCart: true,
+          showBottomNav: true,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                _buildTitle(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(17, 12, 17, 20),
+                    child: Column(
+                      children: [
+                        if (items.isEmpty)
+                          _buildEmptyCart()
+                        else ...[
+                          ...List.generate(
+                            items.length,
+                            (index) => _buildCartItem(items[index]),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildPromoCode(),
+                          const SizedBox(height: 12),
+                          _buildOrderSummary(),
+                          const SizedBox(height: 12),
+                          _buildCheckoutButton(),
+                        ],
+                        const SizedBox(height: 5),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HomeScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Continue Shopping",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -145,9 +144,62 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartItem(int index) {
-    final item = _items[index];
+  Widget _buildEmptyCart() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Icon(
+            Icons.shopping_bag_outlined,
+            size: 70,
+            color: Colors.grey.shade500,
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            "Your Shopping Bag is Empty",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: "serif",
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Explore our handcrafted collections and find something you love!",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: 200,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA06D42),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                "Explore Products",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildCartItem(CartItemModel item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(10),
@@ -160,12 +212,7 @@ class _CartScreenState extends State<CartScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.asset(
-              item.image,
-              width: 97,
-              height: 97,
-              fit: BoxFit.cover,
-            ),
+            child: _buildProductImage(item.image),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -184,7 +231,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                 ),
                 Text(
-                  item.category,
+                  "${item.category} • ${item.size}",
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -194,21 +241,23 @@ class _CartScreenState extends State<CartScreen> {
                 Row(
                   children: [
                     Text(
-                      "₹${item.price}",
+                      "₹${item.price.toStringAsFixed(item.price % 1 == 0 ? 0 : 2)}",
                       style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 5),
-                    Text(
-                      "₹${item.oldPrice}",
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.red,
-                        decoration: TextDecoration.lineThrough,
+                    if (item.oldPrice != null) ...[
+                      const SizedBox(width: 5),
+                      Text(
+                        "₹${item.oldPrice!.toStringAsFixed(item.oldPrice! % 1 == 0 ? 0 : 2)}",
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.red,
+                          decoration: TextDecoration.lineThrough,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ],
@@ -218,7 +267,7 @@ class _CartScreenState extends State<CartScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () => _remove(index),
+                onTap: () => _cartService.removeItem(item.id),
                 child: const Icon(Icons.close, size: 24),
               ),
               Container(
@@ -230,7 +279,7 @@ class _CartScreenState extends State<CartScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: () => _decrease(index),
+                      onPressed: () => _cartService.decreaseQuantity(item.id),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(minWidth: 32),
                       icon: const Icon(Icons.remove, size: 17),
@@ -240,7 +289,7 @@ class _CartScreenState extends State<CartScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     IconButton(
-                      onPressed: () => _increase(index),
+                      onPressed: () => _cartService.increaseQuantity(item.id),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(minWidth: 32),
                       icon: const Icon(Icons.add, size: 17),
@@ -256,6 +305,8 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildPromoCode() {
+    final hasApplied = _cartService.appliedPromoCode != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -273,8 +324,11 @@ class _CartScreenState extends State<CartScreen> {
             Expanded(
               child: TextField(
                 controller: _promoController,
+                enabled: !hasApplied,
                 decoration: InputDecoration(
-                  hintText: "Enter Promo Code",
+                  hintText: hasApplied
+                      ? "Applied: ${_cartService.appliedPromoCode}"
+                      : "Enter Promo Code (e.g. DEVART10)",
                   prefixIcon: const Icon(Icons.sell_outlined),
                   filled: true,
                   fillColor: const Color(0xFFD8D8D8),
@@ -291,18 +345,48 @@ class _CartScreenState extends State<CartScreen> {
               width: 85,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (hasApplied) {
+                    _cartService.removePromo();
+                    _promoController.clear();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Promo code removed"),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  } else {
+                    final success = _cartService.applyPromo(_promoController.text);
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Promo applied! Saved ₹${_cartService.discount.toInt()}"),
+                          backgroundColor: Colors.green.shade700,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Invalid Code! Use DEVART10 or ARTISAN20"),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  }
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD8D8D8),
-                  foregroundColor: Colors.black,
+                  backgroundColor: hasApplied ? Colors.red.shade400 : const Color(0xFFD8D8D8),
+                  foregroundColor: hasApplied ? Colors.white : Colors.black,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
-                  "Apply",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: Text(
+                  hasApplied ? "Remove" : "Apply",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -332,6 +416,12 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildOrderSummary() {
+    final subtotal = _cartService.subtotal;
+    final shipping = _cartService.shipping;
+    final tax = _cartService.tax;
+    final discount = _cartService.discount;
+    final total = _cartService.total;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -362,6 +452,8 @@ class _CartScreenState extends State<CartScreen> {
               _summaryRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
               _summaryRow("Shipping", "₹${shipping.toStringAsFixed(2)}"),
               _summaryRow("Tax (5%)", "₹${tax.toStringAsFixed(2)}"),
+              if (discount > 0)
+                _summaryRow("Discount", "-₹${discount.toStringAsFixed(2)}", green: true),
               const Divider(),
               _summaryRow(
                 "Total",
@@ -412,7 +504,7 @@ class _CartScreenState extends State<CartScreen> {
       width: 280,
       height: 50,
       child: ElevatedButton(
-        onPressed: _items.isEmpty
+        onPressed: _cartService.items.isEmpty
             ? null
             : () {
                 Navigator.push(
@@ -425,6 +517,7 @@ class _CartScreenState extends State<CartScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFA06D42),
           foregroundColor: Colors.white,
+          disabledBackgroundColor: Colors.grey.shade400,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
@@ -436,21 +529,4 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-}
-
-class _CartItem {
-  final String name;
-  final String category;
-  final int price;
-  final int oldPrice;
-  final String image;
-  int quantity = 1;
-
-  _CartItem({
-    required this.name,
-    required this.category,
-    required this.price,
-    required this.oldPrice,
-    required this.image,
-  });
 }
