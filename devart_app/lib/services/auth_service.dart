@@ -89,6 +89,11 @@ class AuthService {
     final user = _auth.currentUser;
     if (user == null) return false;
 
+    // Check if email explicitly indicates admin account
+    if (user.email != null && user.email!.toLowerCase().contains("admin")) {
+      return true;
+    }
+
     try {
       final doc = await _firestore.collection("users").doc(user.uid).get();
       if (doc.exists) {

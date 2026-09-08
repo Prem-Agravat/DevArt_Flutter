@@ -1,3 +1,5 @@
+import 'package:devart/admin/dashboard/admin_dashboard.dart';
+import 'package:devart/user_panel/delivery_address.dart';
 import 'package:devart/user_panel/help_support.dart';
 import 'package:devart/user_panel/login.dart';
 import 'package:flutter/material.dart';
@@ -8,13 +10,59 @@ import 'package:devart/user_panel/profile.dart';
 import 'package:devart/user_panel/wishlist.dart';
 import 'package:devart/services/auth_service.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   final String selectedItem;
 
   const AppDrawer({super.key, required this.selectedItem});
 
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  final AuthService _authService = AuthService();
+  bool _isAdmin = false;
+  String _userName = "User";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final user = _authService.currentUser;
+    if (user != null) {
+      if (user.displayName != null && user.displayName!.isNotEmpty) {
+        _userName = user.displayName!;
+      } else if (user.email != null && user.email!.isNotEmpty) {
+        _userName = user.email!.split('@')[0];
+      }
+
+      try {
+        final doc = await _authService.getUserProfile();
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          if (data['name'] != null && data['name'].toString().isNotEmpty) {
+            _userName = data['name'].toString();
+          }
+          final role = data['role']?.toString().toLowerCase().trim();
+          _isAdmin = (role == "admin");
+        }
+      } catch (_) {}
+
+      if (!_isAdmin) {
+        _isAdmin = await _authService.isCurrentUserAdmin();
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   Future<void> _logout(BuildContext context) async {
-    await AuthService().logout();
+    await _authService.logout();
 
     if (!context.mounted) return;
 
@@ -28,7 +76,7 @@ class AppDrawer extends StatelessWidget {
   void _navigate(BuildContext context, String item, Widget page) {
     Navigator.pop(context);
 
-    if (item == selectedItem) {
+    if (item == widget.selectedItem) {
       return;
     }
 
@@ -68,13 +116,13 @@ class AppDrawer extends StatelessWidget {
             children: [
               _buildProfile(context),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
 
               _buildMenuItem(
                 context,
                 icon: Icons.home,
                 title: "Home",
-                selected: selectedItem == "Home",
+                selected: widget.selectedItem == "Home",
                 onTap: () {
                   _navigate(context, "Home", const HomeScreen());
                 },
@@ -84,7 +132,7 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.category_outlined,
                 title: "Categories",
-                selected: selectedItem == "Categories",
+                selected: widget.selectedItem == "Categories",
                 onTap: () {
                   _navigate(context, "Categories", const CategoriesScreen());
                 },
@@ -94,7 +142,7 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.favorite_border,
                 title: "Wishlist",
-                selected: selectedItem == "Wishlist",
+                selected: widget.selectedItem == "Wishlist",
                 onTap: () {
                   _navigate(context, "Wishlist", const WishlistScreen());
                 },
@@ -104,14 +152,32 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.receipt_long_outlined,
                 title: "Orders",
-                selected: selectedItem == "Orders",
+                selected: widget.selectedItem == "Orders",
                 onTap: () {
                   _navigate(context, "Orders", const OrdersScreen());
                 },
               ),
 
+              if (_isAdmin)
+                _buildMenuItem(
+                  context,
+                  icon: Icons.admin_panel_settings_outlined,
+                  title: "Admin Panel",
+                  selected: widget.selectedItem == "Admin Panel",
+                  highlightColor: const Color(0xFFBFD5FA),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminDashboard(),
+                      ),
+                    );
+                  },
+                ),
+
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 15),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: Divider(color: Color(0xFFD6D0D0), thickness: 1),
               ),
 
@@ -119,7 +185,7 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.person_outline,
                 title: "My Profile",
-                selected: selectedItem == "My Profile",
+                selected: widget.selectedItem == "My Profile",
                 onTap: () {
                   _navigate(context, "My Profile", const ProfileScreen());
                 },
@@ -129,23 +195,23 @@ class AppDrawer extends StatelessWidget {
                 context,
                 icon: Icons.location_on_outlined,
                 title: "Shipping Addresses",
-                selected: selectedItem == "Shipping Addresses",
-                onTap: () {},
-              ),
-
-              _buildMenuItem(
-                context,
-                icon: Icons.payments_outlined,
-                title: "Payment Methods",
-                selected: selectedItem == "Payment Methods",
-                onTap: () {},
+                selected: widget.selectedItem == "Shipping Addresses",
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const DeliveryAddressScreen(),
+                    ),
+                  );
+                },
               ),
 
               _buildMenuItem(
                 context,
                 icon: Icons.help_outline,
                 title: "Help & Support",
-                selected: selectedItem == "Help & Support",
+                selected: widget.selectedItem == "Help & Support",
                 onTap: () {
                   _navigate(
                     context,
@@ -175,18 +241,22 @@ class AppDrawer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Prem Agravat",
-              style: TextStyle(
+            Text(
+              _userName,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF805B3E),
               ),
             ),
             const SizedBox(height: 3),
-            const Text(
-              "Welcome back",
-              style: TextStyle(fontSize: 15, color: Colors.black54),
+            Text(
+              _isAdmin ? "Administrator" : "Welcome back",
+              style: TextStyle(
+                fontSize: 15,
+                color: _isAdmin ? const Color(0xFF1E3A8A) : Colors.black54,
+                fontWeight: _isAdmin ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
             const SizedBox(height: 16),
             GestureDetector(
@@ -218,6 +288,7 @@ class AppDrawer extends StatelessWidget {
     required IconData icon,
     required String title,
     required bool selected,
+    Color? highlightColor,
     required VoidCallback onTap,
   }) {
     return Padding(
@@ -228,7 +299,9 @@ class AppDrawer extends StatelessWidget {
           height: 43,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFFFD9DD) : Colors.transparent,
+            color: selected
+                ? const Color(0xFFFFD9DD)
+                : (highlightColor?.withValues(alpha: 0.3) ?? Colors.transparent),
             borderRadius: BorderRadius.circular(25),
           ),
           child: Row(

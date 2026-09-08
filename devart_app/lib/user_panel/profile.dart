@@ -40,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userEmail = user.email ?? "";
       _userName = user.displayName ?? (_userEmail.isNotEmpty ? _userEmail.split('@')[0] : "User");
 
-      // Check Firestore role
+      // Check admin status via Firestore role & AuthService
       try {
         final doc = await _authService.getUserProfile();
         if (doc.exists) {
@@ -52,9 +52,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final role = data['role']?.toString().toLowerCase().trim();
             _isAdmin = (role == "admin");
           }
+        } else {
+          _isAdmin = await _authService.isCurrentUserAdmin();
         }
       } catch (_) {
-        // Fallback to authService check
+        _isAdmin = await _authService.isCurrentUserAdmin();
+      }
+
+      if (!_isAdmin) {
         _isAdmin = await _authService.isCurrentUserAdmin();
       }
 
@@ -117,24 +122,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: const TextStyle(color: Color(0xFF5F5550)),
                         ),
                         if (_isAdmin) ...[
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFBFD5FA),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF7090C8)),
-                            ),
-                            child: const Text(
-                              "ADMINISTRATOR",
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E3A8A),
-                                letterSpacing: 1.1,
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AdminDashboard(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFBFD5FA),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(0xFF7090C8),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF1E3A8A)
+                                        .withValues(alpha: 0.15),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.admin_panel_settings,
+                                    size: 16,
+                                    color: Color(0xFF1E3A8A),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    "ADMINISTRATOR • Open Panel ➜",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E3A8A),
+                                      letterSpacing: 1.1,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -177,6 +213,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ],
                         ),
+
+                        // ADMIN CONTROLS SECTION (Only shown when user is Admin)
+                        if (_isAdmin) ...[
+                          const SizedBox(height: 32),
+                          _sectionTitle("ADMINISTRATION"),
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFBFD5FA).withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF7090C8),
+                                width: 1.2,
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            child: _profileItem(
+                              icon: Icons.admin_panel_settings_outlined,
+                              title: "Admin Management Panel",
+                              subtitle: "Manage Products, Categories, Orders & Analytics",
+                              color: const Color(0xFFBFD5FA),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AdminDashboard(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+
                         const SizedBox(height: 32),
                         _sectionTitle("ACCOUNT SETTINGS"),
                         _profileItem(
@@ -300,20 +369,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        if (_isAdmin)
-                          _profileItem(
-                            icon: Icons.admin_panel_settings_outlined,
-                            title: "Admin Panel",
-                            color: const Color(0xFFBFD5FA),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AdminDashboard(),
-                                ),
-                              );
-                            },
-                          ),
                         _profileItem(
                           icon: Icons.help_outline,
                           title: "Help & Support",
@@ -423,6 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _profileItem({
     required IconData icon,
     required String title,
+    String? subtitle,
     required Color color,
     required VoidCallback onTap,
   }) {
@@ -436,9 +492,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: color,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon),
+        child: Icon(icon, color: const Color(0xFF2A201A)),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF5F5550),
+              ),
+            )
+          : null,
       trailing: const Icon(Icons.chevron_right, size: 20),
     );
   }
