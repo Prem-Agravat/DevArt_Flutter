@@ -1,4 +1,6 @@
 import 'package:devart/common/app_shell.dart';
+import 'package:devart/models/product_model.dart';
+import 'package:devart/services/product_service.dart';
 import 'package:devart/user_panel/detail_item.dart';
 import 'package:flutter/material.dart';
 
@@ -12,159 +14,99 @@ class SelectedCategoryScreen extends StatefulWidget {
 }
 
 class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
-  final Map<String, Map<String, dynamic>> categoryData = {
-    "All": {
-      "description":
-          "Explore our complete collection of premium\nhandcrafted home decor products.",
-      "products": [
-        {
-          "name": "Traditional Toran",
-          "rating": "4.5",
-          "price": "₹599",
-          "oldPrice": "₹799",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Premium SofaCover",
-          "rating": "4.4",
-          "price": "₹1299",
-          "oldPrice": "₹1599",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Floral Bedsheet",
-          "rating": "4.6",
-          "price": "₹799",
-          "oldPrice": "₹999",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Designer Cushion",
-          "rating": "4.5",
-          "price": "₹999",
-          "oldPrice": "₹1199",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Home Decor",
-          "rating": "4.3",
-          "price": "₹699",
-          "oldPrice": "₹899",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-      ],
-    },
-    "CushionCovers": {
-      "description":
-          "Premium handmade cushion with timeless\ncraftsmanship and comfort.",
-      "products": [
-        {
-          "name": "IndigoGeometry",
-          "rating": "4.5",
-          "reviews": 109,
-          "price": "₹899",
-          "oldPrice": "₹1090",
-          "image": "lib/assets/images/devart_product_1.webp",
-          "images": [
-            "lib/assets/images/devart_product_1.webp",
-            "lib/assets/images/devart_product_1.webp",
-            "lib/assets/images/devart_product_1.webp",
-          ],
-          "sizes": ["16×16", "18×18", "20×20"],
-        },
-        {
-          "name": "IndigoGeometry",
-          "rating": "4.5",
-          "price": "₹899",
-          "oldPrice": "₹1090",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "IndigoGeometry",
-          "rating": "4.5",
-          "price": "₹899",
-          "oldPrice": "₹1090",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "IndigoGeometry",
-          "rating": "4.5",
-          "price": "₹899",
-          "oldPrice": "₹1090",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-      ],
-    },
-    "Toran": {
-      "description":
-          "Beautiful handmade toran designed to add\ntraditional elegance to your home.",
-      "products": [
-        {
-          "name": "Traditional Toran",
-          "rating": "4.5",
-          "price": "₹599",
-          "oldPrice": "₹799",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Designer Toran",
-          "rating": "4.6",
-          "price": "₹699",
-          "oldPrice": "₹899",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-      ],
-    },
-    "SofaCovers": {
-      "description":
-          "Elegant sofa covers crafted for comfort,\nstyle and everyday protection.",
-      "products": [
-        {
-          "name": "Premium SofaCover",
-          "rating": "4.4",
-          "price": "₹1299",
-          "oldPrice": "₹1599",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Designer SofaCover",
-          "rating": "4.5",
-          "price": "₹1499",
-          "oldPrice": "₹1799",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-      ],
-    },
-    "Bedsheet": {
-      "description":
-          "Premium bedsheets with beautiful designs\nfor a comfortable sleeping experience.",
-      "products": [
-        {
-          "name": "Floral Bedsheet",
-          "rating": "4.5",
-          "price": "₹799",
-          "oldPrice": "₹999",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-        {
-          "name": "Cotton Bedsheet",
-          "rating": "4.6",
-          "price": "₹899",
-          "oldPrice": "₹1199",
-          "image": "lib/assets/images/devart_product_1.webp",
-        },
-      ],
-    },
+  final ProductService _productService = ProductService();
+
+  final Map<String, String> categoryDescriptions = {
+    "All": "Explore our complete collection of premium\nhandcrafted home decor products.",
+    "Cushion Covers": "Premium handmade cushion with timeless\ncraftsmanship and comfort.",
+    "CushionCovers": "Premium handmade cushion with timeless\ncraftsmanship and comfort.",
+    "Toran": "Beautiful handmade toran designed to add\ntraditional elegance to your home.",
+    "Sofa Covers": "Elegant sofa covers crafted for comfort,\nstyle and everyday protection.",
+    "SofaCovers": "Elegant sofa covers crafted for comfort,\nstyle and everyday protection.",
+    "Bedsheet": "Premium bedsheets with beautiful designs\nfor a comfortable sleeping experience.",
+    "Bedsheets": "Premium bedsheets with beautiful designs\nfor a comfortable sleeping experience.",
+    "Pottery": "Authentic terracotta and clay pottery,\nhandcrafted with rustic natural glazes.",
+    "Handicrafts": "Timeless artisan woodwork and traditional\nhandcrafted folk collectibles.",
   };
+
+  final List<ProductModel> _fallbackAll = [
+    ProductModel(
+      id: 'p1',
+      name: 'Traditional Toran',
+      category: 'Toran',
+      price: 599.0,
+      oldPrice: 799.0,
+      stock: 10,
+      description: 'Traditional doorway hanging with mirror work.',
+      image: 'lib/assets/images/devart_product_1.webp',
+    ),
+    ProductModel(
+      id: 'p2',
+      name: 'Premium SofaCover',
+      category: 'Sofa Covers',
+      price: 1299.0,
+      oldPrice: 1599.0,
+      stock: 6,
+      description: 'Handcrafted durable sofa cover.',
+      image: 'lib/assets/images/devart_product_1.webp',
+    ),
+    ProductModel(
+      id: 'p3',
+      name: 'Floral Bedsheet',
+      category: 'Bedsheet',
+      price: 799.0,
+      oldPrice: 999.0,
+      stock: 12,
+      description: 'Pure cotton floral printed bedsheet.',
+      image: 'lib/assets/images/devart_product_1.webp',
+    ),
+    ProductModel(
+      id: 'p4',
+      name: 'Designer Cushion',
+      category: 'Cushion Covers',
+      price: 999.0,
+      oldPrice: 1199.0,
+      stock: 15,
+      description: 'Handcrafted designer cushion cover.',
+      image: 'lib/assets/images/devart_product_1.webp',
+    ),
+    ProductModel(
+      id: 'p5',
+      name: 'Terracotta Ceramic Vase',
+      category: 'Pottery',
+      price: 749.0,
+      oldPrice: 899.0,
+      stock: 8,
+      description: 'Earthy clay pottery vase fired with natural glazes.',
+      image: 'lib/assets/images/devart_product_1.webp',
+    ),
+  ];
+
+  Widget _buildProductImage(String imagePath) {
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          "lib/assets/images/devart_product_1.webp",
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        "lib/assets/images/devart_product_1.webp",
+        fit: BoxFit.cover,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final data =
-        categoryData[widget.category] ??
-        {"description": "Explore our premium collection.", "products": []};
-
-    final products = data["products"] as List;
-    final description = data["description"] as String;
+    final description = categoryDescriptions[widget.category] ??
+        "Explore our premium collection of handcrafted artisan creations.";
 
     return AppShell(
       selectedIndex: 1,
@@ -181,7 +123,32 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
             children: [
               _buildTitle(),
               _buildDescription(description),
-              Expanded(child: _buildProductGrid(products)),
+              Expanded(
+                child: StreamBuilder<List<ProductModel>>(
+                  stream: _productService.getProductsStream(
+                    category: widget.category,
+                  ),
+                  builder: (context, snapshot) {
+                    List<ProductModel> products = _fallbackAll;
+
+                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      products = snapshot.data!;
+                    } else if (widget.category != "All") {
+                      final catNorm = widget.category.toLowerCase().replaceAll(" ", "");
+                      products = _fallbackAll
+                          .where((p) =>
+                              p.category.toLowerCase().replaceAll(" ", "") ==
+                              catNorm)
+                          .toList();
+                      if (products.isEmpty) {
+                        products = _fallbackAll;
+                      }
+                    }
+
+                    return _buildProductGrid(products);
+                  },
+                ),
+              ),
             ],
           ),
         ],
@@ -248,7 +215,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
     );
   }
 
-  Widget _buildProductGrid(List products) {
+  Widget _buildProductGrid(List<ProductModel> products) {
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(22, 5, 22, 85),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -266,29 +233,17 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => DetailItemScreen(product: product),
+                builder: (_) => DetailItemScreen(productModel: product),
               ),
             );
           },
-          child: _buildProductCard(
-            name: product["name"],
-            rating: product["rating"],
-            price: product["price"],
-            oldPrice: product["oldPrice"],
-            image: product["image"],
-          ),
+          child: _buildProductCard(product),
         );
       },
     );
   }
 
-  Widget _buildProductCard({
-    required String name,
-    required String rating,
-    required String price,
-    required String oldPrice,
-    required String image,
-  }) {
+  Widget _buildProductCard(ProductModel product) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFD9D9D9),
@@ -303,11 +258,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
         children: [
           Expanded(
             flex: 6,
-            child: Image.asset(
-              image,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            child: _buildProductImage(product.image),
           ),
           Expanded(
             flex: 4,
@@ -320,7 +271,7 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          name,
+                          product.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -332,13 +283,13 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
                       const Icon(Icons.favorite_border, size: 22),
                     ],
                   ),
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(Icons.star_border, size: 18),
-                      const SizedBox(width: 2),
+                      Icon(Icons.star_border, size: 18),
+                      SizedBox(width: 2),
                       Text(
-                        rating,
-                        style: const TextStyle(
+                        "4.5",
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -349,22 +300,24 @@ class _SelectedCategoryScreenState extends State<SelectedCategoryScreen> {
                   Row(
                     children: [
                       Text(
-                        price,
+                        "₹${product.price.toStringAsFixed(product.price % 1 == 0 ? 0 : 2)}",
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 3),
-                      Text(
-                        oldPrice,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.lineThrough,
+                      if (product.oldPrice != null) ...[
+                        const SizedBox(width: 3),
+                        Text(
+                          "₹${product.oldPrice!.toStringAsFixed(product.oldPrice! % 1 == 0 ? 0 : 2)}",
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
-                      ),
+                      ],
                       const Spacer(),
                       Container(
                         width: 22,
