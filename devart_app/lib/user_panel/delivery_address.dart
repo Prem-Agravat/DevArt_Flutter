@@ -13,6 +13,17 @@ class DeliveryAddressScreen extends StatefulWidget {
 class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
   int selectedAddress = 0;
 
+  final List<Map<String, String>> _addresses = [
+    {
+      "type": "Home",
+      "address": "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
+    },
+    {
+      "type": "Office",
+      "address": "Alex Rivers, 45 Heritage Plaza, Floor 2,\nNew York, NY 10001",
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return AppShell(
@@ -32,29 +43,35 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
                   children: [
                     _buildSteps(),
                     const SizedBox(height: 22),
-                    _buildAddressCard(
-                      0,
-                      "Home",
-                      "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
-                    ),
-                    const SizedBox(height: 14),
-                    _buildAddressCard(
-                      1,
-                      "Office",
-                      "Alex Rivers, 124 Artisans Lane, Studio 4B,\nBrooklyn, NY 11201",
-                    ),
-                    const SizedBox(height: 25),
+                    ...List.generate(_addresses.length, (index) {
+                      final item = _addresses[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: _buildAddressCard(
+                          index,
+                          item["type"] ?? "Address",
+                          item["address"] ?? "",
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 11),
                     _buildAddAddress(),
-                    const SizedBox(height: 70),
+                    const SizedBox(height: 50),
                     SizedBox(
                       width: 280,
                       height: 52,
                       child: ElevatedButton(
                         onPressed: () {
+                          final chosenAddress = _addresses.isNotEmpty
+                              ? _addresses[selectedAddress]["address"]!
+                              : "Alex Rivers, 124 Artisans Lane, Studio 4B, Brooklyn, NY 11201";
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const PaymentScreen(),
+                              builder: (_) => PaymentScreen(
+                                selectedAddress: chosenAddress,
+                              ),
                             ),
                           );
                         },
@@ -114,9 +131,9 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
   }
 
   Widget _buildSteps() {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
+      children: [
         _StepItem(number: "1", title: "Address", active: true),
         Text(">", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         _StepItem(number: "2", title: "Payment"),
@@ -179,11 +196,18 @@ class _DeliveryAddressScreenState extends State<DeliveryAddressScreen> {
 
   Widget _buildAddAddress() {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final newAddress = await Navigator.push<Map<String, String>>(
           context,
           MaterialPageRoute(builder: (_) => const AddAddressScreen()),
         );
+
+        if (newAddress != null && mounted) {
+          setState(() {
+            _addresses.add(newAddress);
+            selectedAddress = _addresses.length - 1;
+          });
+        }
       },
       child: Container(
         width: double.infinity,

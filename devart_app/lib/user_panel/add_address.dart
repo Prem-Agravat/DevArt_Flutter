@@ -39,7 +39,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
       return;
     }
 
-    Navigator.pop(context);
+    final formattedAddress =
+        "${_nameController.text.trim()}, ${_houseController.text.trim()}, ${_areaController.text.trim()}, ${_cityController.text.trim()} - ${_pincodeController.text.trim()}";
+
+    Navigator.pop(context, {
+      "type": selectedSaveAs,
+      "address": formattedAddress,
+    });
   }
 
   InputDecoration _inputDecoration({
