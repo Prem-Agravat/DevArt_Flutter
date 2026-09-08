@@ -2,6 +2,8 @@ import 'package:devart/admin/dashboard/admin_dashboard.dart';
 import 'package:devart/common/action_popup.dart';
 import 'package:devart/common/app_shell.dart';
 import 'package:devart/services/auth_service.dart';
+import 'package:devart/services/wishlist_service.dart';
+import 'package:devart/user_panel/delivery_address.dart';
 import 'package:devart/user_panel/login.dart';
 import 'package:devart/user_panel/orders.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
+  final WishlistService _wishlistService = WishlistService();
+
   bool _isAdmin = false;
   String _userName = "User";
   String _userEmail = "";
@@ -80,223 +84,278 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      selectedIndex: 3,
-      selectedDrawerItem: "Profile",
-      showCart: true,
-      showBottomNav: true,
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            _buildTitle(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(26, 20, 26, 25),
-                child: Column(
-                  children: [
-                    Text(
-                      _userName,
-                      style: const TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _userEmail.isNotEmpty ? _userEmail : "user@devart.com",
-                      style: const TextStyle(color: Color(0xFF5F5550)),
-                    ),
-                    if (_isAdmin) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFBFD5FA),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF7090C8)),
-                        ),
-                        child: const Text(
-                          "ADMINISTRATOR",
-                          style: TextStyle(
-                            fontSize: 11,
+    return AnimatedBuilder(
+      animation: _wishlistService,
+      builder: (context, _) {
+        final wishlistCount = _wishlistService.count;
+
+        return AppShell(
+          selectedIndex: 3,
+          selectedDrawerItem: "Profile",
+          showCart: true,
+          showBottomNav: true,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                _buildTitle(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(26, 20, 26, 25),
+                    child: Column(
+                      children: [
+                        Text(
+                          _userName,
+                          style: const TextStyle(
+                            fontSize: 25,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E3A8A),
-                            letterSpacing: 1.1,
                           ),
                         ),
-                      ),
-                    ],
-                    const SizedBox(height: 22),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const WishlistScreen(),
-                                ),
-                              );
-                            },
-                            child: _statCard(
-                              Icons.favorite_border,
-                              "12 Favorites",
+                        const SizedBox(height: 4),
+                        Text(
+                          _userEmail.isNotEmpty ? _userEmail : "user@devart.com",
+                          style: const TextStyle(color: Color(0xFF5F5550)),
+                        ),
+                        if (_isAdmin) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFBFD5FA),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF7090C8)),
+                            ),
+                            child: const Text(
+                              "ADMINISTRATOR",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E3A8A),
+                                letterSpacing: 1.1,
+                              ),
                             ),
                           ),
+                        ],
+                        const SizedBox(height: 22),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const WishlistScreen(),
+                                    ),
+                                  );
+                                },
+                                child: _statCard(
+                                  Icons.favorite_border,
+                                  "$wishlistCount Favorites",
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const OrdersScreen(),
+                                    ),
+                                  );
+                                },
+                                child: _statCard(
+                                  Icons.shopping_bag_outlined,
+                                  "My Orders",
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-
-                        const SizedBox(width: 12),
-
-                        Expanded(
-                          child: GestureDetector(
+                        const SizedBox(height: 32),
+                        _sectionTitle("ACCOUNT SETTINGS"),
+                        _profileItem(
+                          icon: Icons.person_outline,
+                          title: "Edit My Profile",
+                          color: const Color(0xFFFFDCC6),
+                          onTap: () async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const EditProfileScreen(),
+                              ),
+                            );
+                            if (updated == true || mounted) {
+                              _loadUserProfile();
+                            }
+                          },
+                        ),
+                        _profileItem(
+                          icon: Icons.location_on_outlined,
+                          title: "Shipping Addresses",
+                          color: const Color(0xFFCCE1FF),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const DeliveryAddressScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _profileItem(
+                          icon: Icons.payment_outlined,
+                          title: "Payment Methods",
+                          color: const Color(0xFFF0D7D9),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                title: const Text(
+                                  "Payment Methods",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "serif",
+                                  ),
+                                ),
+                                content: const Text(
+                                  "Cash on Delivery (COD) is active for your account. Online UPI and Card payments can also be selected at checkout.",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text(
+                                      "OK",
+                                      style: TextStyle(
+                                        color: Color(0xFFA06D42),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        _profileItem(
+                          icon: Icons.local_offer_outlined,
+                          title: "Coupons",
+                          color: const Color(0xFFFFE2D1),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CouponsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 22),
+                        _sectionTitle("ACTIVITY & PREFERENCES"),
+                        _profileItem(
+                          icon: Icons.inventory_2_outlined,
+                          title: "Order History",
+                          color: const Color(0xFFE4E4E4),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const OrdersScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _profileItem(
+                          icon: Icons.lock_outline,
+                          title: "Change Password",
+                          color: const Color(0xFFE1E7EE),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ChangePasswordScreen(fromProfile: true),
+                              ),
+                            );
+                          },
+                        ),
+                        _profileItem(
+                          icon: Icons.favorite_border,
+                          title: "Wishlist",
+                          color: const Color(0xFFFFDADA),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const WishlistScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        if (_isAdmin)
+                          _profileItem(
+                            icon: Icons.admin_panel_settings_outlined,
+                            title: "Admin Panel",
+                            color: const Color(0xFFBFD5FA),
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const OrdersScreen(),
+                                  builder: (_) => const AdminDashboard(),
                                 ),
                               );
                             },
-                            child: _statCard(
-                              Icons.shopping_bag_outlined,
-                              "Orders",
+                          ),
+                        _profileItem(
+                          icon: Icons.help_outline,
+                          title: "Help & Support",
+                          color: const Color(0xFFE5E5E5),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HelpSupportScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _logout(context),
+                            icon: const Icon(Icons.logout, color: Colors.red),
+                            label: const Text(
+                              "Logout",
+                              style: TextStyle(color: Colors.red, fontSize: 16),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFD6D2),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
-                    _sectionTitle("ACCOUNT SETTINGS"),
-                    _profileItem(
-                      icon: Icons.person_outline,
-                      title: "Edit My Profile",
-                      color: const Color(0xFFFFDCC6),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const EditProfileScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _profileItem(
-                      icon: Icons.location_on_outlined,
-                      title: "Shipping Addresses",
-                      color: const Color(0xFFCCE1FF),
-                      onTap: () {},
-                    ),
-                    _profileItem(
-                      icon: Icons.payment_outlined,
-                      title: "Payment Methods",
-                      color: const Color(0xFFF0D7D9),
-                      onTap: () {},
-                    ),
-                    _profileItem(
-                      icon: Icons.local_offer_outlined,
-                      title: "Coupons",
-                      color: const Color(0xFFFFE2D1),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CouponsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 22),
-                    _sectionTitle("ACTIVITY & PREFERENCES"),
-                    _profileItem(
-                      icon: Icons.inventory_2_outlined,
-                      title: "Order History",
-                      color: const Color(0xFFE4E4E4),
-                      onTap: () {},
-                    ),
-                    _profileItem(
-                      icon: Icons.lock_outline,
-                      title: "Change Password",
-                      color: const Color(0xFFE1E7EE),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const ChangePasswordScreen(fromProfile: true),
-                          ),
-                        );
-                      },
-                    ),
-                    _profileItem(
-                      icon: Icons.favorite_border,
-                      title: "Wishlist",
-                      color: const Color(0xFFFFDADA),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const WishlistScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    // Show Admin Panel ONLY if user is verified as admin in Firestore
-                    if (_isAdmin)
-                      _profileItem(
-                        icon: Icons.admin_panel_settings_outlined,
-                        title: "Admin Panel",
-                        color: const Color(0xFFBFD5FA),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AdminDashboard(),
-                            ),
-                          );
-                        },
-                      ),
-                    _profileItem(
-                      icon: Icons.help_outline,
-                      title: "Help & Support",
-                      color: const Color(0xFFE5E5E5),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HelpSupportScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _logout(context),
-                        icon: const Icon(Icons.logout, color: Colors.red),
-                        label: const Text(
-                          "Logout",
-                          style: TextStyle(color: Colors.red, fontSize: 16),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD6D2),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
