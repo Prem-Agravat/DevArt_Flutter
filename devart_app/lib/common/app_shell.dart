@@ -5,6 +5,7 @@ import 'package:devart/user_panel/categories.dart';
 import 'package:devart/user_panel/orders.dart';
 import 'package:devart/user_panel/profile.dart';
 import 'package:devart/user_panel/cart.dart';
+import 'package:devart/services/cart_service.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -86,15 +87,51 @@ class AppShell extends StatelessWidget {
         ),
         actions: [
           if (showCart)
-            IconButton(
-              onPressed: () {
-                _openCart(context);
+            ListenableBuilder(
+              listenable: CartService(),
+              builder: (context, _) {
+                final count = CartService().itemCount;
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _openCart(context);
+                      },
+                      icon: const Icon(
+                        Icons.shopping_cart,
+                        size: 32,
+                        color: Colors.black,
+                      ),
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFB56F6F),
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            '$count',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
               },
-              icon: const Icon(
-                Icons.shopping_cart,
-                size: 32,
-                color: Colors.black,
-              ),
             )
           else
             const SizedBox(width: 48),
