@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:devart/common/admin_shell.dart';
 import 'package:devart/models/customer_model.dart';
 import 'package:devart/services/customer_service.dart';
@@ -210,88 +211,276 @@ class _CustomerManagementScreenState extends State<CustomerManagementScreen> {
     );
   }
 
-  Widget _buildCustomerCard(CustomerModel customer) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE2E2E2),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.black54),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+  void _showCustomerActions(BuildContext context, CustomerModel customer) {
+    final isAdmin = customer.role == "admin" || customer.email.toLowerCase().contains("admin");
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _buildAvatar(customer.name),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 25),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      customer.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "serif",
+                    _buildAvatar(customer.name),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            customer.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "serif",
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            customer.email,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      customer.email,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isAdmin
+                            ? const Color(0xFFBFD5FA)
+                            : const Color(0xFFE2E2E2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        isAdmin ? "ADMIN" : "CUSTOMER",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isAdmin
+                              ? const Color(0xFF1E3A8A)
+                              : Colors.black87,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Colors.black26),
-          const SizedBox(height: 12),
-
-          _infoRow(Icons.phone_outlined, "Phone", customer.phone),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              Expanded(
-                child: _smallInfo(
-                  Icons.shopping_bag_outlined,
-                  "Orders",
-                  "${customer.orders} ${customer.orders == 1 ? 'Order' : 'Orders'}",
+                const SizedBox(height: 20),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFE5E5E5),
+                    child: Icon(Icons.copy, size: 20, color: Color(0xFF704522)),
+                  ),
+                  title: const Text("Copy Customer Email"),
+                  subtitle: Text(customer.email, style: const TextStyle(fontSize: 12)),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: customer.email));
+                    Navigator.pop(sheetContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Email copied to clipboard!")),
+                    );
+                  },
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _smallInfo(
-                  Icons.currency_rupee,
-                  "Total Spent",
-                  customer.spent,
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFE5E5E5),
+                    child: Icon(Icons.phone, size: 20, color: Color(0xFF704522)),
+                  ),
+                  title: const Text("Copy Phone Number"),
+                  subtitle: Text(customer.phone, style: const TextStyle(fontSize: 12)),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: customer.phone));
+                    Navigator.pop(sheetContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Phone number copied to clipboard!")),
+                    );
+                  },
                 ),
-              ),
-            ],
+                if (customer.id.isNotEmpty)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor: isAdmin
+                          ? const Color(0xFFFFD7D7)
+                          : const Color(0xFFD0E3FF),
+                      child: Icon(
+                        isAdmin
+                            ? Icons.person_remove_outlined
+                            : Icons.admin_panel_settings_outlined,
+                        size: 20,
+                        color: isAdmin ? Colors.red : const Color(0xFF1E3A8A),
+                      ),
+                    ),
+                    title: Text(
+                      isAdmin ? "Demote to Customer" : "Promote to Admin",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isAdmin ? Colors.red : const Color(0xFF1E3A8A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      isAdmin
+                          ? "Remove admin management privileges"
+                          : "Grant full administrative access",
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(sheetContext);
+                      final newRole = isAdmin ? "user" : "admin";
+                      await _customerService.updateCustomerRole(
+                        customer.id,
+                        newRole,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isAdmin
+                                  ? "${customer.name} demoted to Customer"
+                                  : "${customer.name} promoted to Admin!",
+                            ),
+                            backgroundColor: const Color(0xFF704522),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+              ],
+            ),
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCustomerCard(CustomerModel customer) {
+    final isAdmin = customer.role == "admin" || customer.email.toLowerCase().contains("admin");
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: () => _showCustomerActions(context, customer),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE2E2E2),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.black54),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _buildAvatar(customer.name),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        customer.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "serif",
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        customer.email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isAdmin
+                        ? const Color(0xFFBFD5FA)
+                        : const Color(0xFFDCDCDC),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isAdmin ? "ADMIN" : "USER",
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isAdmin
+                          ? const Color(0xFF1E3A8A)
+                          : Colors.black54,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: Colors.black26),
+            const SizedBox(height: 12),
+
+            _infoRow(Icons.phone_outlined, "Phone", customer.phone),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _smallInfo(
+                    Icons.shopping_bag_outlined,
+                    "Orders",
+                    "${customer.orders} ${customer.orders == 1 ? 'Order' : 'Orders'}",
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _smallInfo(
+                    Icons.currency_rupee,
+                    "Total Spent",
+                    customer.spent,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

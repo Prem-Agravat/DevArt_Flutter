@@ -125,4 +125,16 @@ class CustomerService {
       // Ignored for offline/permission fallback
     }
   }
+
+  // ============================================================
+  // UPDATE CUSTOMER ROLE (Promote / Demote)
+  // ============================================================
+  Future<void> updateCustomerRole(String customerId, String newRole) async {
+    try {
+      await _customersRef.doc(customerId).update({'role': newRole});
+      await _usersRef.doc(customerId).update({'role': newRole});
+    } catch (_) {
+      // Ignored for non-matching doc IDs
+    }
+  }
 }
