@@ -24,6 +24,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
   bool _isSaving = false;
 
   @override
+  void initState() {
+    super.initState();
+    _imageUrlController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
@@ -292,6 +300,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Widget _buildImageSection() {
+    final imageText = _imageUrlController.text.trim();
+    final hasImage = imageText.isNotEmpty;
+
     return SizedBox(
       height: 220,
       child: Container(
@@ -301,38 +312,67 @@ class _AddProductScreenState extends State<AddProductScreen> {
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: const Color(0xFFD8BBA9), width: 2),
         ),
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(15),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: Color(0xFFD0E3FF),
-                child: Icon(
-                  Icons.add_a_photo_outlined,
-                  size: 35,
-                  color: Color(0xFF704522),
-                ),
+        clipBehavior: Clip.antiAlias,
+        child: hasImage
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    imageText,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      'lib/assets/images/devart_product_1.webp',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "Live Preview",
+                        style: TextStyle(color: Colors.white, fontSize: 11),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: Color(0xFFD0E3FF),
+                    child: Icon(
+                      Icons.add_a_photo_outlined,
+                      size: 35,
+                      color: Color(0xFF704522),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    "Product Image Preview",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Enter an image URL below or default art image will be used",
+                    style: TextStyle(fontSize: 11, color: Colors.black45),
+                  ),
+                ],
               ),
-              SizedBox(height: 12),
-              Text(
-                "Product Image Preview",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "Enter an image URL below or default art image will be used",
-                style: TextStyle(fontSize: 11, color: Colors.black45),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -387,6 +427,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             DropdownMenuItem(value: "Toran", child: Text("Toran")),
             DropdownMenuItem(value: "Sofa Covers", child: Text("Sofa Covers")),
+            DropdownMenuItem(value: "Bedsheet", child: Text("Bedsheet")),
             DropdownMenuItem(value: "Handicrafts", child: Text("Handicrafts")),
           ],
           onChanged: (value) {

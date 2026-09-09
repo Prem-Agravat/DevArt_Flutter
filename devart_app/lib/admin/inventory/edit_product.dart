@@ -50,6 +50,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
     );
     category = widget.product.category;
     stock = widget.product.stock;
+
+    imageUrlController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -481,7 +485,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Widget _buildGallery() {
-    final imagePath = widget.product.image;
+    final liveUrl = imageUrlController.text.trim();
+    final imagePath = liveUrl.isNotEmpty ? liveUrl : widget.product.image;
+
     return SizedBox(
       height: 200,
       child: Container(
@@ -562,6 +568,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ),
             DropdownMenuItem(value: "Toran", child: Text("Toran")),
             DropdownMenuItem(value: "Sofa Covers", child: Text("Sofa Covers")),
+            DropdownMenuItem(value: "Bedsheet", child: Text("Bedsheet")),
             DropdownMenuItem(value: "Handicrafts", child: Text("Handicrafts")),
           ],
           onChanged: (value) {
