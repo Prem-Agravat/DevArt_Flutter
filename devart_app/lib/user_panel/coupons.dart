@@ -2,6 +2,7 @@ import 'package:devart/common/app_shell.dart';
 import 'package:devart/common/action_popup.dart';
 import 'package:devart/models/offer_model.dart';
 import 'package:devart/services/offer_service.dart';
+import 'package:devart/services/cart_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -220,24 +221,84 @@ class _CouponsScreenState extends State<CouponsScreen> {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: offer.code));
-                  showSuccessPopup(
-                    context,
-                    title: "Coupon Copied",
-                    message: "${offer.code} has been copied to clipboard.",
-                    buttonText: "Continue",
-                  );
-                },
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF2EDE9),
-                ),
-                icon: const Icon(
-                  Icons.copy_outlined,
-                  color: Color(0xFF8D5D3A),
-                  size: 20,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton(
+                    onPressed: () {
+                      final cartService = CartService();
+                      final result = cartService.applyOffer(offer);
+                      if (result) {
+                        showSuccessPopup(
+                          context,
+                          title: "Coupon Applied",
+                          message: "${offer.code} has been applied to your cart!",
+                          buttonText: "Go to Cart",
+                          onPressed: () {
+                            Navigator.pop(context); // Return to cart
+                          },
+                        );
+                      } else {
+                        if (offer.minSpend != null && cartService.subtotal < offer.minSpend!) {
+                          final req = offer.minSpend! % 1 == 0
+                              ? offer.minSpend!.toInt()
+                              : offer.minSpend!;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Min spend of ₹$req required in cart to apply."),
+                              backgroundColor: Colors.red.shade700,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Unable to apply coupon."),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                      minimumSize: const Size(56, 32),
+                      side: const BorderSide(color: Color(0xFF704522)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      "Apply",
+                      style: TextStyle(
+                        color: Color(0xFF704522),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: offer.code));
+                      showSuccessPopup(
+                        context,
+                        title: "Coupon Copied",
+                        message: "${offer.code} has been copied to clipboard.",
+                        buttonText: "Continue",
+                      );
+                    },
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFF2EDE9),
+                      minimumSize: const Size(34, 34),
+                      padding: EdgeInsets.zero,
+                    ),
+                    icon: const Icon(
+                      Icons.copy_outlined,
+                      color: Color(0xFF8D5D3A),
+                      size: 18,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

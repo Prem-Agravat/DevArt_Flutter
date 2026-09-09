@@ -345,7 +345,7 @@ class _CartScreenState extends State<CartScreen> {
               width: 85,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (hasApplied) {
                     _cartService.removePromo();
                     _promoController.clear();
@@ -356,21 +356,22 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     );
                   } else {
-                    final success = _cartService.applyPromo(_promoController.text);
-                    if (success) {
+                    final result = await _cartService.applyPromoAsync(_promoController.text);
+                    if (!mounted) return;
+                    if (result.success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text("Promo applied! Saved ₹${_cartService.discount.toInt()}"),
+                          content: Text(result.message),
                           backgroundColor: Colors.green.shade700,
                           duration: const Duration(seconds: 2),
                         ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Invalid Code! Use DEVART10 or ARTISAN20"),
-                          backgroundColor: Colors.red,
-                          duration: Duration(seconds: 2),
+                        SnackBar(
+                          content: Text(result.message),
+                          backgroundColor: Colors.red.shade700,
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                     }

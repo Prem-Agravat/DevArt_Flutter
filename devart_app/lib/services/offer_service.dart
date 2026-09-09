@@ -76,6 +76,23 @@ class OfferService {
   }
 
   // ============================================================
+  // GET OFFER BY CODE
+  // ============================================================
+  Future<OfferModel?> getOfferByCode(String code) async {
+    try {
+      final cleanCode = code.trim().toUpperCase();
+      final snapshot = await _offersRef
+          .where('code', isEqualTo: cleanCode)
+          .limit(1)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        return OfferModel.fromFirestore(snapshot.docs.first);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  // ============================================================
   // SEED INITIAL OFFERS (Runs only if database collection is empty)
   // ============================================================
   Future<void> seedInitialOffersIfEmpty() async {

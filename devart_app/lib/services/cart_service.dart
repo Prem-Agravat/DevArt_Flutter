@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:devart/models/product_model.dart';
+import 'package:devart/models/offer_model.dart';
+import 'package:devart/services/offer_service.dart';
 
 class CartItemModel {
   final String id;
@@ -49,6 +51,7 @@ class CartService extends ChangeNotifier {
   ];
 
   String? _appliedPromoCode;
+  OfferModel? _appliedOffer;
   double _discountAmount = 0.0;
 
   List<CartItemModel> get items => List.unmodifiable(_items);
@@ -56,6 +59,7 @@ class CartService extends ChangeNotifier {
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
 
   String? get appliedPromoCode => _appliedPromoCode;
+  OfferModel? get appliedOffer => _appliedOffer;
 
   double get subtotal => _items.fold(0.0, (sum, item) => sum + item.totalPrice);
 
@@ -128,18 +132,116 @@ class CartService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Apply offer directly from an OfferModel
+  bool applyOffer(OfferModel offer) {
+    if (offer.isExpired) {
+      return false;
+    }
+    if (offer.minSpend != null && subtotal < offer.minSpend!) {
+      return false;
+    }
+
+    _appliedOffer = offer;
+    _appliedPromoCode = offer.code;
+    _computeDiscount();
+    notifyListeners();
+    return true;
+  }
+
+  // Async lookup supporting live Firestore offers + fallback codes
+  Future<({bool success, String message})> applyPromoAsync(String code) async {
+    final cleanCode = code.trim().toUpperCase();
+    if (cleanCode.isEmpty) {
+      return (success: false, message: "Please enter a valid coupon code.");
+    }
+
+    if (_items.isEmpty) {
+      return (success: false, message: "Your cart is empty.");
+    }
+
+    try {
+      final offer = await OfferService().getOfferByCode(cleanCode);
+      if (offer != null) {
+        if (offer.isExpired || offer.status.toLowerCase() == "expired") {
+          return (success: false, message: "This coupon has expired.");
+        }
+        if (offer.status.toLowerCase() != "active") {
+          return (success: false, message: "This coupon is currently inactive.");
+        }
+        if (offer.minSpend != null && subtotal < offer.minSpend!) {
+          final req = offer.minSpend! % 1 == 0 ? offer.minSpend!.toInt() : offer.minSpend!;
+          return (success: false, message: "Minimum cart value of ₹$req required.");
+        }
+
+        _appliedOffer = offer;
+        _appliedPromoCode = offer.code;
+        _computeDiscount();
+        notifyListeners();
+        return (
+          success: true,
+          message: "Coupon applied! Saved ₹${_discountAmount.toStringAsFixed(0)}"
+        );
+      }
+    } catch (_) {}
+
+    // Fallback demo coupon codes
+    if (cleanCode == "DEVART10" || cleanCode == "WELCOME10" || cleanCode == "DISCOUNT") {
+      _appliedOffer = null;
+      _appliedPromoCode = cleanCode;
+      _discountAmount = (subtotal * 0.10).clamp(0.0, subtotal);
+      notifyListeners();
+      return (
+        success: true,
+        message: "Coupon applied! Saved ₹${_discountAmount.toStringAsFixed(0)}"
+      );
+    } else if (cleanCode == "ARTISAN20" || cleanCode == "DEVART20" || cleanCode == "FESTIVE20") {
+      _appliedOffer = null;
+      _appliedPromoCode = cleanCode;
+      _discountAmount = (subtotal * 0.20).clamp(0.0, subtotal);
+      notifyListeners();
+      return (
+        success: true,
+        message: "Coupon applied! Saved ₹${_discountAmount.toStringAsFixed(0)}"
+      );
+    } else if (cleanCode == "FLAT500") {
+      if (subtotal < 2000) {
+        return (success: false, message: "Minimum cart value of ₹2000 required.");
+      }
+      _appliedOffer = null;
+      _appliedPromoCode = cleanCode;
+      _discountAmount = 500.0.clamp(0.0, subtotal);
+      notifyListeners();
+      return (
+        success: true,
+        message: "Coupon applied! Saved ₹${_discountAmount.toStringAsFixed(0)}"
+      );
+    }
+
+    return (success: false, message: "Invalid coupon code.");
+  }
+
+  // Synchronous fallback
   bool applyPromo(String code) {
     final cleanCode = code.trim().toUpperCase();
     if (cleanCode.isEmpty) return false;
 
     if (cleanCode == "DEVART10" || cleanCode == "WELCOME10" || cleanCode == "DISCOUNT") {
+      _appliedOffer = null;
       _appliedPromoCode = cleanCode;
-      _discountAmount = 50.0;
+      _discountAmount = (subtotal * 0.10).clamp(0.0, subtotal);
       notifyListeners();
       return true;
-    } else if (cleanCode == "ARTISAN20" || cleanCode == "DEVART20") {
+    } else if (cleanCode == "ARTISAN20" || cleanCode == "DEVART20" || cleanCode == "FESTIVE20") {
+      _appliedOffer = null;
       _appliedPromoCode = cleanCode;
-      _discountAmount = 100.0;
+      _discountAmount = (subtotal * 0.20).clamp(0.0, subtotal);
+      notifyListeners();
+      return true;
+    } else if (cleanCode == "FLAT500") {
+      if (subtotal < 2000) return false;
+      _appliedOffer = null;
+      _appliedPromoCode = cleanCode;
+      _discountAmount = 500.0.clamp(0.0, subtotal);
       notifyListeners();
       return true;
     }
@@ -147,19 +249,37 @@ class CartService extends ChangeNotifier {
   }
 
   void removePromo() {
+    _appliedOffer = null;
     _appliedPromoCode = null;
     _discountAmount = 0.0;
     notifyListeners();
   }
 
+  void _computeDiscount() {
+    if (_appliedOffer != null) {
+      if (_appliedOffer!.minSpend != null && subtotal < _appliedOffer!.minSpend!) {
+        _discountAmount = 0.0;
+      } else if (_appliedOffer!.discountType.toLowerCase() == "fixed") {
+        _discountAmount = _appliedOffer!.discount.clamp(0.0, subtotal);
+      } else {
+        _discountAmount = (subtotal * (_appliedOffer!.discount / 100.0)).clamp(0.0, subtotal);
+      }
+    }
+  }
+
   void _recalculateDiscount() {
     if (_items.isEmpty) {
       _discountAmount = 0.0;
+    } else if (_appliedOffer != null) {
+      _computeDiscount();
+    } else if (_appliedPromoCode != null) {
+      applyPromo(_appliedPromoCode!);
     }
   }
 
   void clearCart() {
     _items.clear();
+    _appliedOffer = null;
     _appliedPromoCode = null;
     _discountAmount = 0.0;
     notifyListeners();
