@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:devart/common/admin_shell.dart';
 import 'package:devart/services/auth_service.dart';
+import 'package:devart/user_panel/dashboard.dart';
 import 'package:devart/user_panel/login.dart';
 
 class AdminProfileScreen extends StatefulWidget {
@@ -647,7 +648,41 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    // Switch to Store View
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        },
+                        icon: const Icon(Icons.storefront_outlined),
+                        label: const Text(
+                          "Switch to Customer App",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFBFD5FA),
+                          foregroundColor: const Color(0xFF1E3A8A),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            side: const BorderSide(color: Color(0xFF7090C8)),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
 
                     // Logout Button
                     SizedBox(

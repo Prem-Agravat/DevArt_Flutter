@@ -6,6 +6,8 @@ import 'package:devart/admin/offers/offer_management.dart';
 import 'package:devart/admin/customers/customer_management.dart';
 import 'package:devart/admin/profile/admin_profile.dart';
 
+import 'package:devart/user_panel/dashboard.dart';
+
 class AdminShell extends StatelessWidget {
   final Widget child;
   final int selectedIndex;
@@ -80,18 +82,49 @@ class AdminShell extends StatelessWidget {
               height: 58,
             ),
 
-            const SizedBox(width: 25),
+            const SizedBox(width: 16),
 
             const Text(
               "Admin Panel",
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
 
             const Spacer(),
+
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.storefront_outlined,
+                      size: 24,
+                      color: Colors.black54,
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      "Store",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
             GestureDetector(
               onTap: () {
@@ -104,10 +137,10 @@ class AdminShell extends StatelessWidget {
                   children: [
                     Icon(
                       isCustomerPage ? Icons.people : Icons.people_alt_outlined,
-                      size: 26,
+                      size: 24,
                       color: isCustomerPage ? Colors.black : Colors.black54,
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       "Customers",
                       style: TextStyle(
@@ -137,7 +170,7 @@ class AdminShell extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.account_circle_outlined,
-                      size: 26,
+                      size: 24,
                       color: Colors.black54,
                     ),
                     SizedBox(height: 2),
