@@ -6,6 +6,7 @@ import 'package:devart/models/product_model.dart';
 import 'package:devart/resource/resource.dart';
 import 'package:devart/services/product_service.dart';
 
+/// Admin screen for browsing, filtering, and managing product inventory.
 class InventoryManagementScreen extends StatefulWidget {
   const InventoryManagementScreen({super.key});
 

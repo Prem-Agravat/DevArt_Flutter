@@ -18,6 +18,7 @@ Future<void> main() async {
   runApp(const DevArtApp());
 }
 
+/// Root widget configuring providers, theme, and initial route for DevArt.
 class DevArtApp extends StatelessWidget {
   const DevArtApp({super.key});
 

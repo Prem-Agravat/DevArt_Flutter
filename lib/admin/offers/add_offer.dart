@@ -3,6 +3,7 @@ import 'package:devart/common/admin_shell.dart';
 import 'package:devart/models/offer_model.dart';
 import 'package:devart/services/offer_service.dart';
 
+/// Admin screen for creating a new promotional offer or coupon.
 class AddOfferScreen extends StatefulWidget {
   const AddOfferScreen({super.key});
 

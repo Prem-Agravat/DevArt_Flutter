@@ -5,6 +5,7 @@ import 'package:devart/admin/offers/edit_offer.dart';
 import 'package:devart/models/offer_model.dart';
 import 'package:devart/services/offer_service.dart';
 
+/// Admin screen for listing, filtering, and managing promotional offers.
 class OfferManagementScreen extends StatefulWidget {
   const OfferManagementScreen({super.key});
 

@@ -3,6 +3,7 @@ import 'package:devart/common/admin_shell.dart';
 import 'package:devart/models/offer_model.dart';
 import 'package:devart/services/offer_service.dart';
 
+/// Admin screen for updating or deleting an existing promotional offer.
 class EditOfferScreen extends StatefulWidget {
   final OfferModel offer;
 

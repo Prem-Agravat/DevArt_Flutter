@@ -13,6 +13,7 @@ import 'package:devart/admin/orders/order_management.dart';
 import 'package:devart/admin/orders/order_details.dart';
 import 'package:devart/user_panel/dashboard.dart';
 
+/// Main admin dashboard displaying store overview and quick actions.
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
 

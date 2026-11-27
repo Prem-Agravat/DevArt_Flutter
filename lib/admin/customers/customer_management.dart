@@ -4,6 +4,7 @@ import 'package:devart/common/admin_shell.dart';
 import 'package:devart/models/customer_model.dart';
 import 'package:devart/services/customer_service.dart';
 
+/// Admin screen for viewing and managing registered customers.
 class CustomerManagementScreen extends StatefulWidget {
   const CustomerManagementScreen({super.key});
 

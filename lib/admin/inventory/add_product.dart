@@ -4,6 +4,7 @@ import 'package:devart/models/product_model.dart';
 import 'package:devart/resource/resource.dart';
 import 'package:devart/services/product_service.dart';
 
+/// Admin screen for creating a new product in the inventory.
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
 

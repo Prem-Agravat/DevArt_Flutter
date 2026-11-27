@@ -6,6 +6,7 @@ import 'package:devart/resource/resource.dart';
 import 'package:devart/services/customer_service.dart';
 import 'package:devart/services/order_service.dart';
 
+/// Admin screen for viewing order details and updating order status.
 class OrderDetailsScreen extends StatefulWidget {
   final OrderModel order;
 

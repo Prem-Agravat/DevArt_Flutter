@@ -4,6 +4,7 @@ import 'package:devart/models/product_model.dart';
 import 'package:devart/resource/resource.dart';
 import 'package:devart/services/product_service.dart';
 
+/// Admin screen for editing an existing product's details and stock.
 class EditProductScreen extends StatefulWidget {
   final ProductModel product;
 
